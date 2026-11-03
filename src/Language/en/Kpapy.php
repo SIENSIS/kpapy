@@ -31,6 +31,7 @@ return [
     'invalidField'     => 'Unknown field "{0}".',
     'invalidInclude'   => 'Unknown relation "{0}".',
     'invalidJson'      => 'The request body must be a JSON object.',
+    'httpsRequired'    => 'The API is only available over HTTPS.',
 
     // Input values
     'fieldNotWritable'    => 'This field cannot be written.',

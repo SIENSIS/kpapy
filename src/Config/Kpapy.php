@@ -171,6 +171,12 @@ class Kpapy extends BaseConfig
      */
     public string $profileUrl = '';
 
+    /**
+     * En producció, refusa les peticions que no són HTTPS (darrere d'un proxy, configura
+     * Config\App::$proxyIPs perquè CodeIgniter el detecti).
+     */
+    public bool $requireHttps = true;
+
     // ------------------------------------------------------------------
     // CORS i límit de peticions
     // ------------------------------------------------------------------

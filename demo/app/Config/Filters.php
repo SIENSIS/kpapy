@@ -73,7 +73,8 @@ class Filters extends BaseFilters
     public array $globals = [
         'before' => [
             // 'honeypot',
-            'csrf',
+            // The API (kpapy) uses tokens, not cookies: no CSRF there
+            'csrf' => ['except' => ['api/*', 'kpapy-demo/api/*']],
             // 'invalidchars',
         ],
         'after' => [

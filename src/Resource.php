@@ -823,7 +823,7 @@ class Resource
      *
      * @param array<string, mixed> $options
      */
-    public static function routes(RouteCollection $routes, string $path, string $handler, array $options = []): void
+    public static function routes(RouteCollection $routes, string $path, string|\Closure $handler, array $options = []): void
     {
         $path    = trim($path, '/');
         $verbs   = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'];
