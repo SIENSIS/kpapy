@@ -24,6 +24,10 @@ Funcionalitats:
 - **OpenAPI 3.1** generat a partir dels recursos, i una pàgina de documentació
 - Comandes `spark`: generar un recurs a partir d'una taula, el document OpenAPI, llistar les rutes de l'API, crear tokens, publicar la configuració, instal·lar la demo
 
+![Consola de la demo de kpapy](screenshots/02-console-list-books.png)
+
+Més captures a [screenshots/](screenshots/README.md).
+
 ---
 
 ## Documentació

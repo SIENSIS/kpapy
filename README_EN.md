@@ -24,6 +24,10 @@ Features:
 - **OpenAPI 3.1** generated from the resources, and a documentation page
 - `spark` commands: generate a resource from a table, the OpenAPI document, list the API routes, create tokens, publish the configuration, install the demo
 
+![kpapy demo console](screenshots/02-console-list-books.png)
+
+More in [screenshots/](screenshots/README.md).
+
 ---
 
 ## Documentation
