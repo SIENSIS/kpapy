@@ -92,8 +92,7 @@ trait Writes
             throw ApiException::forbidden();
         }
 
-        $this->db->table($this->table)->where($this->primaryKey, $id)->update([$this->deletedField => null]);
-        $this->callHook('afterRestore', $id, $row);
+        $this->restoreRecord($id, $row);
 
         return $this->itemResponse($this->findRecord($id) ?? throw ApiException::notFound(), 200);
     }
