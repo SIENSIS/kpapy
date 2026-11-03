@@ -460,6 +460,8 @@ Emmascara els identificadors d'aquest recurs (`Config\Kpapy::$maskIds` ho fa per
 
 Els codis són **idèntics als de kpcrudy**: mateix algorisme (AES-256-CTR amb un HMAC de l'id com a vector inicial), mateixa clau (`Config\Kpapy::$maskKey`; si no, `Config\Kpcrudy::$maskKey`; si no, la clau d'encriptació de CodeIgniter; si no, `writable/kpcrudy/mask.key`) i mateix context (el nom de la taula). Un registre té el mateix id al back office i a l'API.
 
+Sense kpcrudy funciona igual: simplement se salta `Config\Kpcrudy::$maskKey`. El darrer recurs, `writable/kpcrudy/mask.key`, conserva a propòsit el nom de fitxer de kpcrudy: només es crea si no hi ha cap clau configurada (ni tan sols la d'encriptació de CodeIgniter), i si més endavant s'hi afegeix kpcrudy, totes dues llibreries llegeixen el mateix fitxer i els ids continuen coincidint. Per evitar el fitxer, configura `Config\Kpapy::$maskKey` (32 caràcters o més) o `encryption.key` al `.env`.
+
 ### `encodeId(int|string $id, ?string $context = null): string` · `decodeId(string $value, ?string $context = null): ?string`
 
 El codi d'un id i a l'inrevés (el context per defecte és la taula).

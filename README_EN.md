@@ -4,6 +4,8 @@
 
 Automatic REST API generator for **CodeIgniter 4** (4.4 or later, PHP 8.1+), in the style of [kpcrudy](https://github.com/SIENSIS/kpcrudy).
 
+> **kpapy is an independent library.** It does not need kpcrudy: it has its own permission resolver, id masker, validation and configuration, and it works in any CodeIgniter 4 project. kpcrudy is an **optional** integration: when a project uses both, they can share the permission resolver and the masked ids, so the web back office and the API behave the same way.
+
 You describe a resource (a table or a model, its fields, relations, filters and permissions) in a controller method, and kpapy serves a secure, documented JSON API for it. All you need is a route and a method.
 
 Features:
@@ -13,8 +15,8 @@ Features:
 - **1-N and N-N relations**, **translated fields** in a child table (`?lang=` or `Accept-Language`), **multiselect** fields, **file uploads** with signed, temporary URLs for private files
 - **Custom operations** (`POST /books/{id}/lend`) and **bulk actions** (`POST /books/bulk`), with hooks before and after every write
 - Validation with CodeIgniter rules (also inferred from the table), errors as **RFC 9457** `application/problem+json`, translated into six languages
-- **Central permissions** (`PermissionResolver`, the same idea as kpcrudy; one class can serve both), `setPermission()` per resource and the permission catalogue
-- **Masked ids** in every URL and response, **identical to kpcrudy's**: a record has the same id in the web and in the API
+- **Central permissions** (`PermissionResolver`; if the project also uses kpcrudy, one class can serve both), `setPermission()` per resource and the permission catalogue
+- **Masked ids** in every URL and response; if the project also uses kpcrudy, they are **identical to kpcrudy's** (a record has the same id in the web and in the API)
 - **Authentication with CodeIgniter Shield access tokens**, token **scopes** intersected with the user's permissions, HMAC tokens for server-to-server integrations
 - **Login for apps with two-factor authentication**: the user's active method (authenticator app, email code) or, for users without 2FA, a **code shown in their web profile**
 - **ETags**, conditional `GET` (`304`) and optimistic concurrency with `If-Match` (`412`)
@@ -45,7 +47,7 @@ There is no tagged release yet, so the constraint is `dev-main` (the latest comm
 Requirements: PHP 8.1+, CodeIgniter 4.4+. Optional:
 
 - [`codeigniter4/shield`](https://shield.codeigniter.com/): token authentication, scopes and the app login. Without Shield you can still use public resources or write your own `Authenticator`.
-- [`siensis/kpcrudy`](https://github.com/SIENSIS/kpcrudy): back-office CRUDs that share permissions and masked ids with the API.
+- [`siensis/kpcrudy`](https://github.com/SIENSIS/kpcrudy): only if you also want back-office CRUDs that share permissions and masked ids with the API. kpapy does not need it and Composer does not install it.
 
 CodeIgniter discovers the `Kpapy` namespace (filter `kpapy`, commands, languages, views, migrations) on its own. If you use the app login, create its table:
 

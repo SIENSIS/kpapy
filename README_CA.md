@@ -4,6 +4,8 @@
 
 Generador automàtic d'API REST per a **CodeIgniter 4** (4.4 o posterior, PHP 8.1+), a l'estil de [kpcrudy](https://github.com/SIENSIS/kpcrudy).
 
+> **kpapy és una llibreria independent.** No necessita kpcrudy: té el seu propi resolutor de permisos, emmascarador d'identificadors, validació i configuració, i funciona en qualsevol projecte CodeIgniter 4. kpcrudy és una integració **opcional**: si un projecte fa servir totes dues, poden compartir el resolutor de permisos i els identificadors emmascarats, i així el back office web i l'API es comporten igual.
+
 Descrius un recurs (una taula o un model, els seus camps, relacions, filtres i permisos) en un mètode de controlador, i kpapy en serveix una API JSON segura i documentada. Només cal una ruta i un mètode.
 
 Funcionalitats:
@@ -13,8 +15,8 @@ Funcionalitats:
 - **Relacions 1-N i N-N**, **camps traduïts** en una taula filla (`?lang=` o `Accept-Language`), camps **multiselecció**, **pujada de fitxers** amb URL signades i temporals per als fitxers privats
 - **Operacions pròpies** (`POST /books/{id}/lend`) i **accions massives** (`POST /books/bulk`), amb hooks abans i després de cada escriptura
 - Validació amb regles de CodeIgniter (també deduïdes de la taula), errors en format **RFC 9457** `application/problem+json`, traduïts a sis idiomes
-- **Permisos centralitzats** (`PermissionResolver`, la mateixa idea que kpcrudy; una sola classe pot servir per a totes dues), `setPermission()` per recurs i el catàleg de permisos
-- **Identificadors emmascarats** a totes les URL i respostes, **idèntics als de kpcrudy**: un registre té el mateix id al web i a l'API
+- **Permisos centralitzats** (`PermissionResolver`; si el projecte també fa servir kpcrudy, una sola classe pot servir per a totes dues), `setPermission()` per recurs i el catàleg de permisos
+- **Identificadors emmascarats** a totes les URL i respostes; si el projecte també fa servir kpcrudy, són **idèntics als de kpcrudy** (un registre té el mateix id al web i a l'API)
 - **Autenticació amb tokens d'accés de CodeIgniter Shield**, **abasts** (scopes) del token combinats amb els permisos de l'usuari, tokens HMAC per a integracions entre servidors
 - **Inici de sessió per a apps amb segon factor**: el mètode actiu de l'usuari (aplicació d'autenticació, codi per correu) o, per als usuaris sense 2FA, un **codi que apareix al seu perfil web**
 - **ETag**, `GET` condicional (`304`) i concurrència optimista amb `If-Match` (`412`)
@@ -45,7 +47,7 @@ Encara no hi ha cap versió etiquetada, per això la restricció és `dev-main` 
 Requisits: PHP 8.1+, CodeIgniter 4.4+. Opcionals:
 
 - [`codeigniter4/shield`](https://shield.codeigniter.com/): autenticació amb tokens, abasts i l'inici de sessió de les apps. Sense Shield pots fer servir recursos públics o escriure el teu propi `Authenticator`.
-- [`siensis/kpcrudy`](https://github.com/SIENSIS/kpcrudy): CRUD del back office que comparteixen permisos i identificadors emmascarats amb l'API.
+- [`siensis/kpcrudy`](https://github.com/SIENSIS/kpcrudy): només si també vols CRUD del back office que comparteixin permisos i identificadors emmascarats amb l'API. kpapy no el necessita i Composer no l'instal·la.
 
 CodeIgniter descobreix sol l'espai de noms `Kpapy` (filtre `kpapy`, comandes, idiomes, vistes, migracions). Si fas servir l'inici de sessió de les apps, crea'n la taula:
 

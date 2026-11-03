@@ -198,6 +198,8 @@ Even if the user is an administrator, that token gets `403` on any write. Scopes
 
 ### One permission resolver for kpcrudy and kpapy
 
+> Only for projects that also use kpcrudy. Without it, implement just `Kpapy\PermissionResolver` (see the recipes above).
+
 ```php
 namespace App\Libraries;
 

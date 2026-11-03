@@ -460,6 +460,8 @@ Masks the ids of this resource (`Config\Kpapy::$maskIds` does it for every resou
 
 The codes are **identical to kpcrudy's**: same algorithm (AES-256-CTR with an HMAC of the id as IV), same key (`Config\Kpapy::$maskKey`, else `Config\Kpcrudy::$maskKey`, else CodeIgniter's encryption key, else `writable/kpcrudy/mask.key`) and same context (the table name). A record has the same id in the back office and in the API.
 
+Without kpcrudy this works the same way: `Config\Kpcrudy::$maskKey` is simply skipped. The last fallback, `writable/kpcrudy/mask.key`, keeps kpcrudy's file name on purpose: it is only created when no key is configured at all (not even CodeIgniter's encryption key), and if kpcrudy is added later both libraries read the same file and the ids still match. To avoid the file, set `Config\Kpapy::$maskKey` (32+ characters) or `encryption.key` in `.env`.
+
 ### `encodeId(int|string $id, ?string $context = null): string` · `decodeId(string $value, ?string $context = null): ?string`
 
 The code of an id and the other way round (the context defaults to the table).

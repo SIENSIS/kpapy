@@ -15,4 +15,4 @@ Automatic REST API generator for **CodeIgniter 4** · Generador automàtic d'API
 | Requirements · Requisits | [docs/requirements.md](docs/requirements.md) | — |
 | Changes · Canvis | [CHANGELOG.md](CHANGELOG.md) | [CHANGELOG.md](CHANGELOG.md) |
 
-kpapy is the API counterpart of [kpcrudy](https://github.com/SIENSIS/kpcrudy): both share permission resolvers, resource names and masked ids, so the web back office and the API of a project behave the same way.
+kpapy is **independent**: it works in any CodeIgniter 4 project without [kpcrudy](https://github.com/SIENSIS/kpcrudy). When a project uses both, they can share permission resolvers, resource names and masked ids, so the web back office and the API behave the same way. · kpapy és **independent**: funciona en qualsevol projecte CodeIgniter 4 sense kpcrudy. Si un projecte fa servir totes dues, poden compartir resolutors de permisos, noms de recurs i identificadors emmascarats.
