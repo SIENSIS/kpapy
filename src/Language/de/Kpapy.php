@@ -1,0 +1,96 @@
+<?php
+
+return [
+    // Titles of the error responses (application/problem+json)
+    'problems' => [
+        'bad-request'            => 'Ungültige Anfrage',
+        'unauthorized'           => 'Authentifizierung erforderlich',
+        'forbidden'              => 'Nicht erlaubt',
+        'not-found'              => 'Nicht gefunden',
+        'method-not-allowed'     => 'Methode nicht erlaubt',
+        'conflict'               => 'Konflikt',
+        'operation-failed'       => 'Der Vorgang konnte nicht abgeschlossen werden',
+        'precondition-failed'    => 'Die Ressource wurde geändert',
+        'precondition-required'  => 'If-Match-Header erforderlich',
+        'payload-too-large'      => 'Anfrage zu groß',
+        'unsupported-media-type' => 'Nicht unterstützter Inhaltstyp',
+        'validation'             => 'Ungültige Daten',
+        'too-many-requests'      => 'Zu viele Anfragen',
+        'server-error'           => 'Serverfehler',
+        'invalid-credentials'    => 'Ungültige Anmeldedaten',
+        'two-factor-required'    => 'Zwei-Faktor-Authentifizierung erforderlich',
+        'invalid-code'           => 'Ungültiger oder abgelaufener Code',
+        'challenge-denied'       => 'Anmeldung abgelehnt',
+    ],
+
+    // Request parameters
+    'invalidParameter' => 'Ungültiger Wert für den Parameter „{0}“.',
+    'invalidFilter'    => 'Der Filter „{0}“ ist nicht erlaubt oder hat einen ungültigen Wert.',
+    'invalidOperator'  => 'Unbekannter Filteroperator „{0}“.',
+    'invalidSort'      => 'Die Ergebnisse können nicht nach „{0}“ sortiert werden.',
+    'invalidField'     => 'Unbekanntes Feld „{0}“.',
+    'invalidInclude'   => 'Unbekannte Relation „{0}“.',
+    'invalidJson'      => 'Der Anfragetext muss ein JSON-Objekt sein.',
+    'httpsRequired'    => 'Die API ist nur über HTTPS verfügbar.',
+
+    // Input values
+    'fieldNotWritable'    => 'Dieses Feld kann nicht geschrieben werden.',
+    'invalidRelation'     => 'Der verknüpfte Datensatz existiert nicht oder ist nicht erlaubt.',
+    'invalidBool'         => 'Der Wert muss true oder false sein.',
+    'invalidNumber'       => 'Der Wert muss eine Zahl sein.',
+    'invalidDate'         => 'Der Wert muss ein Datum sein (ISO 8601).',
+    'invalidOption'       => 'Der Wert ist keine der erlaubten Optionen.',
+    'invalidText'         => 'Der Wert muss ein Text sein.',
+    'invalidTranslation'  => 'Der Wert muss ein Text oder ein Objekt mit einem Text pro Sprache sein.',
+    'translationRequired' => 'Ein Wert in „{0}“ ist erforderlich.',
+    'bulkInvalid'         => 'Senden Sie eine „action“ und eine Liste von „ids“.',
+    'bulkUnknown'         => 'Unbekannte Massenaktion „{0}“.',
+
+    // Files
+    'fileMissing'      => 'Senden Sie eine Datei.',
+    'fileType'         => 'Dateityp nicht erlaubt. Erlaubt: {0}.',
+    'fileSize'         => 'Die Datei überschreitet die maximale Größe von {0} KB.',
+    'invalidSignature' => 'Der Link ist ungültig oder abgelaufen.',
+
+    // Authentication
+    'auth' => [
+        'invalidCredentials' => 'Die E-Mail-Adresse oder das Passwort ist nicht korrekt.',
+        'bannedUser'         => 'Dieses Konto kann sich nicht anmelden.',
+        'codeSent'           => 'Ein Bestätigungscode wurde an Ihre E-Mail-Adresse gesendet.',
+        'useApp'             => 'Geben Sie den Code Ihrer Authenticator-App ein.',
+        'useWeb'             => 'Öffnen Sie Ihr Profil in der Webanwendung und geben Sie den dort angezeigten Code ein.',
+        'twoFactorRequired'  => 'Aktivieren Sie die Zwei-Faktor-Authentifizierung in Ihrem Webprofil, um sich über eine App anzumelden.',
+        'invalidCode'        => 'Der Code ist ungültig oder abgelaufen.',
+        'tooManyAttempts'    => 'Zu viele fehlgeschlagene Versuche. Beginnen Sie die Anmeldung erneut.',
+        'denied'             => 'Die Anmeldung wurde im Webprofil abgelehnt.',
+        'emailSubject'       => 'Ihr Anmeldecode',
+        'emailBody'          => 'Ihr Bestätigungscode lautet {0}. Er läuft in {1} Minuten ab. Wenn Sie nicht versucht haben, sich anzumelden, ändern Sie Ihr Passwort.',
+        'pendingTitle'       => 'Ausstehende Anmeldungen',
+        'pendingIntro'       => 'Eine App versucht, sich mit Ihrem Konto anzumelden. Wenn Sie das sind, geben Sie diesen Code in der App ein.',
+        'pendingDevice'      => 'Gerät',
+        'pendingWhen'        => 'Angefordert',
+        'pendingCode'        => 'Code',
+        'pendingShow'        => 'Code anzeigen',
+        'pendingDeny'        => 'Das war ich nicht',
+        'pendingNone'        => 'Es gibt keine ausstehenden Anmeldungen.',
+        'tokenCreated'       => 'Kopieren Sie das Token jetzt: Es wird nicht noch einmal angezeigt.',
+    ],
+
+    // Errors of the developer (exceptions)
+    'exceptions' => [
+        'modelNotFound'     => 'Kpapy: Model „{0}“ nicht gefunden.',
+        'missingSource'     => 'Kpapy: Rufen Sie setTable() oder setModel() vor render() auf.',
+        'tableNotFound'     => 'Kpapy: Die Tabelle „{0}“ existiert nicht.',
+        'invalidResolver'   => 'Kpapy: Die Klasse „{0}“ implementiert Kpapy\\PermissionResolver nicht.',
+        'invalidMasker'     => 'Kpapy: Die Klasse „{0}“ implementiert Kpapy\\IdMasker nicht.',
+        'invalidOperation'  => 'Kpapy: „{0}“ ist kein gültiger Operationsname: Verwenden Sie Kleinbuchstaben, Ziffern, - und _ und kein reserviertes Wort.',
+        'translationsEmpty' => 'Kpapy: setTranslations() benötigt mindestens ein Feld und eine Sprache.',
+        'maskFailed'        => 'Kpapy: Die Kennung konnte nicht maskiert werden.',
+        'opensslRequired'   => 'Kpapy: Zum Maskieren von Kennungen wird die PHP-Erweiterung openssl benötigt.',
+        'maskKeyTooShort'   => 'Kpapy: $maskKey muss mindestens 32 Zeichen lang sein.',
+        'cannotCreateDir'   => 'Kpapy: Das Verzeichnis „{0}“ kann nicht erstellt werden.',
+        'invalidKeyFile'    => 'Kpapy: Die Schlüsseldatei „{0}“ ist ungültig.',
+        'invalidProvider'   => 'Kpapy: Der Zwei-Faktor-Anbieter „{0}“ ist ungültig.',
+        'shieldRequired'    => 'Kpapy: Diese Funktion erfordert codeigniter4/shield.',
+    ],
+];

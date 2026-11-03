@@ -1,0 +1,96 @@
+<?php
+
+return [
+    // Titles of the error responses (application/problem+json)
+    'problems' => [
+        'bad-request'            => 'Petició incorrecta',
+        'unauthorized'           => 'Cal autenticació',
+        'forbidden'              => 'No permès',
+        'not-found'              => 'No trobat',
+        'method-not-allowed'     => 'Mètode no permès',
+        'conflict'               => 'Conflicte',
+        'operation-failed'       => 'No s\'ha pogut completar l\'operació',
+        'precondition-failed'    => 'El recurs ha canviat',
+        'precondition-required'  => 'Cal la capçalera If-Match',
+        'payload-too-large'      => 'Petició massa gran',
+        'unsupported-media-type' => 'Tipus de contingut no admès',
+        'validation'             => 'Dades no vàlides',
+        'too-many-requests'      => 'Massa peticions',
+        'server-error'           => 'Error del servidor',
+        'invalid-credentials'    => 'Credencials no vàlides',
+        'two-factor-required'    => 'Cal autenticació de dos factors',
+        'invalid-code'           => 'Codi no vàlid o caducat',
+        'challenge-denied'       => 'Inici de sessió denegat',
+    ],
+
+    // Request parameters
+    'invalidParameter' => 'Valor no vàlid per al paràmetre "{0}".',
+    'invalidFilter'    => 'El filtre "{0}" no està permès o té un valor no vàlid.',
+    'invalidOperator'  => 'Operador de filtre desconegut: "{0}".',
+    'invalidSort'      => 'Els resultats no es poden ordenar per "{0}".',
+    'invalidField'     => 'Camp desconegut: "{0}".',
+    'invalidInclude'   => 'Relació desconeguda: "{0}".',
+    'invalidJson'      => 'El cos de la petició ha de ser un objecte JSON.',
+    'httpsRequired'    => 'L\'API només està disponible per HTTPS.',
+
+    // Input values
+    'fieldNotWritable'    => 'Aquest camp no es pot escriure.',
+    'invalidRelation'     => 'El registre relacionat no existeix o no està permès.',
+    'invalidBool'         => 'El valor ha de ser true o false.',
+    'invalidNumber'       => 'El valor ha de ser un número.',
+    'invalidDate'         => 'El valor ha de ser una data (ISO 8601).',
+    'invalidOption'       => 'El valor no és cap de les opcions permeses.',
+    'invalidText'         => 'El valor ha de ser un text.',
+    'invalidTranslation'  => 'El valor ha de ser un text o un objecte amb un text per idioma.',
+    'translationRequired' => 'Cal un valor en "{0}".',
+    'bulkInvalid'         => 'Envia una "action" i una llista d\'"ids".',
+    'bulkUnknown'         => 'Acció massiva desconeguda: "{0}".',
+
+    // Files
+    'fileMissing'      => 'Envia un fitxer.',
+    'fileType'         => 'Tipus de fitxer no permès. Permesos: {0}.',
+    'fileSize'         => 'El fitxer supera la mida màxima de {0} KB.',
+    'invalidSignature' => 'L\'enllaç no és vàlid o ha caducat.',
+
+    // Authentication
+    'auth' => [
+        'invalidCredentials' => 'L\'adreça electrònica o la contrasenya no són correctes.',
+        'bannedUser'         => 'Aquest compte no pot iniciar sessió.',
+        'codeSent'           => 'S\'ha enviat un codi de verificació al teu correu electrònic.',
+        'useApp'             => 'Escriu el codi de la teva aplicació d\'autenticació.',
+        'useWeb'             => 'Obre el teu perfil a l\'aplicació web i escriu el codi que hi apareix.',
+        'twoFactorRequired'  => 'Activa l\'autenticació de dos factors al teu perfil web per iniciar sessió des d\'una aplicació.',
+        'invalidCode'        => 'El codi no és vàlid o ha caducat.',
+        'tooManyAttempts'    => 'Massa intents fallits. Torna a començar l\'inici de sessió.',
+        'denied'             => 'L\'inici de sessió s\'ha denegat des del perfil web.',
+        'emailSubject'       => 'El teu codi d\'inici de sessió',
+        'emailBody'          => 'El teu codi de verificació és {0}. Caduca d\'aquí a {1} minuts. Si no has intentat iniciar sessió, canvia la contrasenya.',
+        'pendingTitle'       => 'Inicis de sessió pendents',
+        'pendingIntro'       => 'Una aplicació està intentant iniciar sessió amb el teu compte. Si ets tu, escriu aquest codi a l\'aplicació.',
+        'pendingDevice'      => 'Dispositiu',
+        'pendingWhen'        => 'Sol·licitat',
+        'pendingCode'        => 'Codi',
+        'pendingShow'        => 'Mostra el codi',
+        'pendingDeny'        => 'No he estat jo',
+        'pendingNone'        => 'No hi ha cap inici de sessió pendent.',
+        'tokenCreated'       => 'Copia el token ara: no es tornarà a mostrar.',
+    ],
+
+    // Errors of the developer (exceptions)
+    'exceptions' => [
+        'modelNotFound'     => 'Kpapy: no s\'ha trobat el model "{0}".',
+        'missingSource'     => 'Kpapy: crida setTable() o setModel() abans de render().',
+        'tableNotFound'     => 'Kpapy: la taula "{0}" no existeix.',
+        'invalidResolver'   => 'Kpapy: la classe "{0}" no implementa Kpapy\\PermissionResolver.',
+        'invalidMasker'     => 'Kpapy: la classe "{0}" no implementa Kpapy\\IdMasker.',
+        'invalidOperation'  => 'Kpapy: "{0}" no és un nom d\'operació vàlid: fes servir minúscules, números, - i _, i no una paraula reservada.',
+        'translationsEmpty' => 'Kpapy: setTranslations() necessita com a mínim un camp i un idioma.',
+        'maskFailed'        => 'Kpapy: no s\'ha pogut emmascarar l\'identificador.',
+        'opensslRequired'   => 'Kpapy: per emmascarar identificadors cal l\'extensió openssl de PHP.',
+        'maskKeyTooShort'   => 'Kpapy: $maskKey ha de tenir com a mínim 32 caràcters.',
+        'cannotCreateDir'   => 'Kpapy: no es pot crear el directori "{0}".',
+        'invalidKeyFile'    => 'Kpapy: el fitxer de clau "{0}" no és vàlid.',
+        'invalidProvider'   => 'Kpapy: el proveïdor de dos factors "{0}" no és vàlid.',
+        'shieldRequired'    => 'Kpapy: aquesta funcionalitat necessita codeigniter4/shield.',
+    ],
+];

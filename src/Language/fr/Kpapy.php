@@ -1,0 +1,96 @@
+<?php
+
+return [
+    // Titles of the error responses (application/problem+json)
+    'problems' => [
+        'bad-request'            => 'Requête incorrecte',
+        'unauthorized'           => 'Authentification requise',
+        'forbidden'              => 'Non autorisé',
+        'not-found'              => 'Introuvable',
+        'method-not-allowed'     => 'Méthode non autorisée',
+        'conflict'               => 'Conflit',
+        'operation-failed'       => 'L\'opération n\'a pas pu être effectuée',
+        'precondition-failed'    => 'La ressource a changé',
+        'precondition-required'  => 'En-tête If-Match requis',
+        'payload-too-large'      => 'Requête trop volumineuse',
+        'unsupported-media-type' => 'Type de contenu non pris en charge',
+        'validation'             => 'Données non valides',
+        'too-many-requests'      => 'Trop de requêtes',
+        'server-error'           => 'Erreur du serveur',
+        'invalid-credentials'    => 'Identifiants non valides',
+        'two-factor-required'    => 'Authentification à deux facteurs requise',
+        'invalid-code'           => 'Code non valide ou expiré',
+        'challenge-denied'       => 'Connexion refusée',
+    ],
+
+    // Request parameters
+    'invalidParameter' => 'Valeur non valide pour le paramètre « {0} ».',
+    'invalidFilter'    => 'Le filtre « {0} » n\'est pas autorisé ou a une valeur non valide.',
+    'invalidOperator'  => 'Opérateur de filtre inconnu : « {0} ».',
+    'invalidSort'      => 'Les résultats ne peuvent pas être triés par « {0} ».',
+    'invalidField'     => 'Champ inconnu : « {0} ».',
+    'invalidInclude'   => 'Relation inconnue : « {0} ».',
+    'invalidJson'      => 'Le corps de la requête doit être un objet JSON.',
+    'httpsRequired'    => 'L\'API n\'est disponible qu\'en HTTPS.',
+
+    // Input values
+    'fieldNotWritable'    => 'Ce champ ne peut pas être modifié.',
+    'invalidRelation'     => 'L\'enregistrement lié n\'existe pas ou n\'est pas autorisé.',
+    'invalidBool'         => 'La valeur doit être true ou false.',
+    'invalidNumber'       => 'La valeur doit être un nombre.',
+    'invalidDate'         => 'La valeur doit être une date (ISO 8601).',
+    'invalidOption'       => 'La valeur ne fait pas partie des options autorisées.',
+    'invalidText'         => 'La valeur doit être un texte.',
+    'invalidTranslation'  => 'La valeur doit être un texte ou un objet avec un texte par langue.',
+    'translationRequired' => 'Une valeur est requise en « {0} ».',
+    'bulkInvalid'         => 'Envoyez une « action » et une liste d\'« ids ».',
+    'bulkUnknown'         => 'Action groupée inconnue : « {0} ».',
+
+    // Files
+    'fileMissing'      => 'Envoyez un fichier.',
+    'fileType'         => 'Type de fichier non autorisé. Autorisés : {0}.',
+    'fileSize'         => 'Le fichier dépasse la taille maximale de {0} Ko.',
+    'invalidSignature' => 'Le lien n\'est pas valide ou a expiré.',
+
+    // Authentication
+    'auth' => [
+        'invalidCredentials' => 'L\'adresse e-mail ou le mot de passe est incorrect.',
+        'bannedUser'         => 'Ce compte ne peut pas se connecter.',
+        'codeSent'           => 'Un code de vérification a été envoyé à votre adresse e-mail.',
+        'useApp'             => 'Saisissez le code de votre application d\'authentification.',
+        'useWeb'             => 'Ouvrez votre profil dans l\'application web et saisissez le code qui s\'y affiche.',
+        'twoFactorRequired'  => 'Activez l\'authentification à deux facteurs dans votre profil web pour vous connecter depuis une application.',
+        'invalidCode'        => 'Le code n\'est pas valide ou a expiré.',
+        'tooManyAttempts'    => 'Trop de tentatives échouées. Recommencez la connexion.',
+        'denied'             => 'La connexion a été refusée depuis le profil web.',
+        'emailSubject'       => 'Votre code de connexion',
+        'emailBody'          => 'Votre code de vérification est {0}. Il expire dans {1} minutes. Si vous n\'avez pas essayé de vous connecter, changez votre mot de passe.',
+        'pendingTitle'       => 'Connexions en attente',
+        'pendingIntro'       => 'Une application essaie de se connecter avec votre compte. Si c\'est vous, saisissez ce code dans l\'application.',
+        'pendingDevice'      => 'Appareil',
+        'pendingWhen'        => 'Demandé',
+        'pendingCode'        => 'Code',
+        'pendingShow'        => 'Afficher le code',
+        'pendingDeny'        => 'Ce n\'était pas moi',
+        'pendingNone'        => 'Aucune connexion en attente.',
+        'tokenCreated'       => 'Copiez le jeton maintenant : il ne sera plus affiché.',
+    ],
+
+    // Errors of the developer (exceptions)
+    'exceptions' => [
+        'modelNotFound'     => 'Kpapy : modèle « {0} » introuvable.',
+        'missingSource'     => 'Kpapy : appelez setTable() ou setModel() avant render().',
+        'tableNotFound'     => 'Kpapy : la table « {0} » n\'existe pas.',
+        'invalidResolver'   => 'Kpapy : la classe « {0} » n\'implémente pas Kpapy\\PermissionResolver.',
+        'invalidMasker'     => 'Kpapy : la classe « {0} » n\'implémente pas Kpapy\\IdMasker.',
+        'invalidOperation'  => 'Kpapy : « {0} » n\'est pas un nom d\'opération valide : utilisez des minuscules, des chiffres, - et _, et pas un mot réservé.',
+        'translationsEmpty' => 'Kpapy : setTranslations() a besoin d\'au moins un champ et une langue.',
+        'maskFailed'        => 'Kpapy : l\'identifiant n\'a pas pu être masqué.',
+        'opensslRequired'   => 'Kpapy : le masquage des identifiants nécessite l\'extension PHP openssl.',
+        'maskKeyTooShort'   => 'Kpapy : $maskKey doit contenir au moins 32 caractères.',
+        'cannotCreateDir'   => 'Kpapy : impossible de créer le répertoire « {0} ».',
+        'invalidKeyFile'    => 'Kpapy : le fichier de clé « {0} » n\'est pas valide.',
+        'invalidProvider'   => 'Kpapy : le fournisseur à deux facteurs « {0} » n\'est pas valide.',
+        'shieldRequired'    => 'Kpapy : cette fonctionnalité nécessite codeigniter4/shield.',
+    ],
+];

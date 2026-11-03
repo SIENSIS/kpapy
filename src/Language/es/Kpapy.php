@@ -1,0 +1,96 @@
+<?php
+
+return [
+    // Titles of the error responses (application/problem+json)
+    'problems' => [
+        'bad-request'            => 'Petición incorrecta',
+        'unauthorized'           => 'Se requiere autenticación',
+        'forbidden'              => 'No permitido',
+        'not-found'              => 'No encontrado',
+        'method-not-allowed'     => 'Método no permitido',
+        'conflict'               => 'Conflicto',
+        'operation-failed'       => 'No se ha podido completar la operación',
+        'precondition-failed'    => 'El recurso ha cambiado',
+        'precondition-required'  => 'Se requiere la cabecera If-Match',
+        'payload-too-large'      => 'Petición demasiado grande',
+        'unsupported-media-type' => 'Tipo de contenido no admitido',
+        'validation'             => 'Datos no válidos',
+        'too-many-requests'      => 'Demasiadas peticiones',
+        'server-error'           => 'Error del servidor',
+        'invalid-credentials'    => 'Credenciales no válidas',
+        'two-factor-required'    => 'Se requiere autenticación de dos factores',
+        'invalid-code'           => 'Código no válido o caducado',
+        'challenge-denied'       => 'Inicio de sesión denegado',
+    ],
+
+    // Request parameters
+    'invalidParameter' => 'Valor no válido para el parámetro "{0}".',
+    'invalidFilter'    => 'El filtro "{0}" no está permitido o tiene un valor no válido.',
+    'invalidOperator'  => 'Operador de filtro desconocido: "{0}".',
+    'invalidSort'      => 'Los resultados no se pueden ordenar por "{0}".',
+    'invalidField'     => 'Campo desconocido: "{0}".',
+    'invalidInclude'   => 'Relación desconocida: "{0}".',
+    'invalidJson'      => 'El cuerpo de la petición debe ser un objeto JSON.',
+    'httpsRequired'    => 'La API solo está disponible por HTTPS.',
+
+    // Input values
+    'fieldNotWritable'    => 'Este campo no se puede escribir.',
+    'invalidRelation'     => 'El registro relacionado no existe o no está permitido.',
+    'invalidBool'         => 'El valor debe ser true o false.',
+    'invalidNumber'       => 'El valor debe ser un número.',
+    'invalidDate'         => 'El valor debe ser una fecha (ISO 8601).',
+    'invalidOption'       => 'El valor no es ninguna de las opciones permitidas.',
+    'invalidText'         => 'El valor debe ser un texto.',
+    'invalidTranslation'  => 'El valor debe ser un texto o un objeto con un texto por idioma.',
+    'translationRequired' => 'Se requiere un valor en "{0}".',
+    'bulkInvalid'         => 'Envía una "action" y una lista de "ids".',
+    'bulkUnknown'         => 'Acción masiva desconocida: "{0}".',
+
+    // Files
+    'fileMissing'      => 'Envía un archivo.',
+    'fileType'         => 'Tipo de archivo no permitido. Permitidos: {0}.',
+    'fileSize'         => 'El archivo supera el tamaño máximo de {0} KB.',
+    'invalidSignature' => 'El enlace no es válido o ha caducado.',
+
+    // Authentication
+    'auth' => [
+        'invalidCredentials' => 'El correo electrónico o la contraseña no son correctos.',
+        'bannedUser'         => 'Esta cuenta no puede iniciar sesión.',
+        'codeSent'           => 'Se ha enviado un código de verificación a tu correo electrónico.',
+        'useApp'             => 'Escribe el código de tu aplicación de autenticación.',
+        'useWeb'             => 'Abre tu perfil en la aplicación web y escribe el código que aparece.',
+        'twoFactorRequired'  => 'Activa la autenticación de dos factores en tu perfil web para iniciar sesión desde una aplicación.',
+        'invalidCode'        => 'El código no es válido o ha caducado.',
+        'tooManyAttempts'    => 'Demasiados intentos fallidos. Vuelve a empezar el inicio de sesión.',
+        'denied'             => 'El inicio de sesión se ha denegado desde el perfil web.',
+        'emailSubject'       => 'Tu código de inicio de sesión',
+        'emailBody'          => 'Tu código de verificación es {0}. Caduca dentro de {1} minutos. Si no has intentado iniciar sesión, cambia la contraseña.',
+        'pendingTitle'       => 'Inicios de sesión pendientes',
+        'pendingIntro'       => 'Una aplicación está intentando iniciar sesión con tu cuenta. Si eres tú, escribe este código en la aplicación.',
+        'pendingDevice'      => 'Dispositivo',
+        'pendingWhen'        => 'Solicitado',
+        'pendingCode'        => 'Código',
+        'pendingShow'        => 'Mostrar el código',
+        'pendingDeny'        => 'No he sido yo',
+        'pendingNone'        => 'No hay ningún inicio de sesión pendiente.',
+        'tokenCreated'       => 'Copia el token ahora: no se volverá a mostrar.',
+    ],
+
+    // Errors of the developer (exceptions)
+    'exceptions' => [
+        'modelNotFound'     => 'Kpapy: no se ha encontrado el modelo "{0}".',
+        'missingSource'     => 'Kpapy: llama a setTable() o setModel() antes de render().',
+        'tableNotFound'     => 'Kpapy: la tabla "{0}" no existe.',
+        'invalidResolver'   => 'Kpapy: la clase "{0}" no implementa Kpapy\\PermissionResolver.',
+        'invalidMasker'     => 'Kpapy: la clase "{0}" no implementa Kpapy\\IdMasker.',
+        'invalidOperation'  => 'Kpapy: "{0}" no es un nombre de operación válido: usa minúsculas, números, - y _, y no una palabra reservada.',
+        'translationsEmpty' => 'Kpapy: setTranslations() necesita como mínimo un campo y un idioma.',
+        'maskFailed'        => 'Kpapy: no se ha podido enmascarar el identificador.',
+        'opensslRequired'   => 'Kpapy: para enmascarar identificadores se necesita la extensión openssl de PHP.',
+        'maskKeyTooShort'   => 'Kpapy: $maskKey debe tener como mínimo 32 caracteres.',
+        'cannotCreateDir'   => 'Kpapy: no se puede crear el directorio "{0}".',
+        'invalidKeyFile'    => 'Kpapy: el archivo de clave "{0}" no es válido.',
+        'invalidProvider'   => 'Kpapy: el proveedor de dos factores "{0}" no es válido.',
+        'shieldRequired'    => 'Kpapy: esta funcionalidad requiere codeigniter4/shield.',
+    ],
+];
