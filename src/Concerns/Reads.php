@@ -35,7 +35,8 @@ trait Reads
 
         $get     = $this->request->getGet();
         $trashed = $this->trashedMode($get['trashed'] ?? null);
-        $fields  = $this->requestedFields($this->listOutputFields(), $get['fields'] ?? null);
+        // ?fields= pot demanar qualsevol camp del detall; sense, els del llistat
+        $fields  = ($get['fields'] ?? '') === '' ? $this->listOutputFields() : $this->requestedFields($this->outputFields(), $get['fields']);
         $include = $this->requestedIncludes($get['include'] ?? null);
 
         $builder = $this->selectBuilder($trashed);
@@ -468,7 +469,14 @@ trait Reads
                 throw ApiException::badRequest(lang('Kpapy.invalidParameter', ['cursor']));
             }
 
-            [$value, $id] = $decoded;
+            [$value, $code] = $decoded;
+
+            // La clau del cursor també va emmascarada
+            $id = is_scalar($code) ? $this->decodeId((string) $code) : null;
+
+            if ($id === null) {
+                throw ApiException::badRequest(lang('Kpapy.invalidParameter', ['cursor']));
+            }
 
             $builder->groupStart()
                 ->where("{$column} {$sign}", $value)
@@ -484,7 +492,7 @@ trait Reads
         if (count($rows) > $perPage) {
             $rows = array_slice($rows, 0, $perPage);
             $last = $rows[$perPage - 1];
-            $next = rtrim(strtr(base64_encode((string) json_encode([$last[$this->isTranslated($field) ? $field : $field] ?? null, $last[$this->primaryKey]])), '+/', '-_'), '=');
+            $next = rtrim(strtr(base64_encode((string) json_encode([$last[$field] ?? null, $this->encodeId((string) $last[$this->primaryKey])])), '+/', '-_'), '=');
         }
 
         return [$rows, $next];

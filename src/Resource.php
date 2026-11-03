@@ -42,6 +42,7 @@ class Resource
     use Concerns\Schema;
     use Concerns\Reads;
     use Concerns\Writes;
+    use Concerns\Describes;
 
     /**
      * Paraules de la URL que no poden ser claus d'operacions pròpies.
@@ -681,6 +682,13 @@ class Resource
      */
     public function render(): ResponseInterface
     {
+        if (static::$describing) {
+            static::$described = $this->definition();
+
+            // Una resposta pròpia: la compartida és la de la pàgina que genera la documentació
+            return \Config\Services::response(null, false)->setStatusCode(204);
+        }
+
         try {
             $this->boot();
 
