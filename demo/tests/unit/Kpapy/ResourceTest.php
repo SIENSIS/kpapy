@@ -353,6 +353,10 @@ final class ResourceTest extends CIUnitTestCase
         $this->assertSame(200, $this->api('GET', 'books/' . $code, [], null, [], $config)->render()->getStatusCode());
 
         $this->assertSame((new \Kpapy\DefaultIdMasker($config))->encode('1', 'kp_books'), $code);
+
+        // The algorithm is stable: these codes must never change between versions
+        $this->assertSame('o-JSBfO6N6qAkxDMZg', $code);
+        $this->assertSame('aYTv-MfUpsvKpWfkcxc', (new \Kpapy\DefaultIdMasker($config))->encode('42', 'authors'));
     }
 
     public function testRoutingErrors(): void

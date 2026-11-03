@@ -443,7 +443,7 @@ No hi ha cap permís especial:
 
 Emmascara els identificadors d'aquest recurs (`Config\Kpapy::$maskIds` ho fa per a tots): la clau primària a les URL i les respostes, els id de les relacions (amb la taula relacionada com a context), els cursors i els id de les accions massives. Un codi fals o modificat és `404`.
 
-Algorisme: AES-256-CTR amb un HMAC de l'id com a vector inicial, de manera que un registre té sempre el mateix codi en un context (el nom de la taula) i el codi d'una taula no serveix per a una altra. Clau: `Config\Kpapy::$maskKey` (32 caràcters o més); si no, la clau d'encriptació de CodeIgniter; si no, `writable/kpapy/mask.key` (es crea la primera vegada; per evitar-lo, configura una de les altres dues). Per fer servir un altre algorisme, implementa `Kpapy\IdMasker` i indica'l a `Config\Kpapy::$idMasker`.
+Algorisme: AES-256-CTR amb un HMAC de l'id com a vector inicial, de manera que un registre té sempre el mateix codi en un context (el nom de la taula) i el codi d'una taula no serveix per a una altra. Clau: `Config\Kpapy::$maskKey` (32 caràcters o més); si no, la clau d'encriptació de CodeIgniter; si no, `writable/kpapy/mask.key` (es crea la primera vegada; per evitar-lo, configura una de les altres dues). Els codis són **estables**: amb la mateixa clau i context no canvien entre versions, i qualsevol altre component que apliqui el mateix algorisme amb la mateixa clau obté els mateixos codis. Per fer servir un altre algorisme, implementa `Kpapy\IdMasker` i indica'l a `Config\Kpapy::$idMasker`.
 
 ### `encodeId(int|string $id, ?string $context = null): string` · `decodeId(string $value, ?string $context = null): ?string`
 

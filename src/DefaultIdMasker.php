@@ -17,6 +17,14 @@ class DefaultIdMasker implements IdMasker
     protected const CIPHER = 'aes-256-ctr';
     protected const TAG    = 12;
 
+    /**
+     * Etiquetes de derivació de les claus (xifrat i signatura). Són part de l'algorisme: amb la
+     * mateixa clau d'origen i el mateix context, els codis són sempre els mateixos, també entre
+     * versions i en qualsevol altre component que apliqui aquest algorisme. No es poden canviar
+     * sense invalidar tots els codis ja publicats.
+     */
+    protected const KEY_LABELS = ['kpcrudy-mask-encrypt', 'kpcrudy-mask-sign'];
+
     protected ?string $encKey = null;
     protected ?string $macKey = null;
 
@@ -78,8 +86,8 @@ class DefaultIdMasker implements IdMasker
                 throw new RuntimeException(lang('Kpapy.exceptions.opensslRequired'));
             }
 
-            $this->encKey = Secret::key($this->config, 'mask-encrypt');
-            $this->macKey = Secret::key($this->config, 'mask-sign');
+            $this->encKey = Secret::derive($this->config, static::KEY_LABELS[0]);
+            $this->macKey = Secret::derive($this->config, static::KEY_LABELS[1]);
         }
 
         return [$this->encKey, $this->macKey];

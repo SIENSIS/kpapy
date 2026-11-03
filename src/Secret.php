@@ -17,7 +17,15 @@ final class Secret
 {
     public static function key(KpapyConfig $config, string $purpose): string
     {
-        return hash_hmac('sha256', 'kpapy-' . $purpose, self::source($config), true);
+        return self::derive($config, 'kpapy-' . $purpose);
+    }
+
+    /**
+     * Clau derivada amb una etiqueta exacta (HMAC-SHA256 de l'etiqueta amb la clau d'origen).
+     */
+    public static function derive(KpapyConfig $config, string $label): string
+    {
+        return hash_hmac('sha256', $label, self::source($config), true);
     }
 
     private static function source(KpapyConfig $config): string

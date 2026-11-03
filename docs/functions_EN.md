@@ -443,7 +443,7 @@ There is no special permission:
 
 Masks the ids of this resource (`Config\Kpapy::$maskIds` does it for every resource): the primary key in URLs and responses, relation ids (with the related table as context), cursors and bulk ids. A forged or altered code is `404`.
 
-Algorithm: AES-256-CTR with an HMAC of the id as IV, so a record always has the same code in a context (the table name) and a code of one table is useless in another. Key: `Config\Kpapy::$maskKey` (32+ characters), else CodeIgniter's encryption key, else `writable/kpapy/mask.key` (created the first time; to avoid it, set one of the other two). To use another algorithm, implement `Kpapy\IdMasker` and set it in `Config\Kpapy::$idMasker`.
+Algorithm: AES-256-CTR with an HMAC of the id as IV, so a record always has the same code in a context (the table name) and a code of one table is useless in another. Key: `Config\Kpapy::$maskKey` (32+ characters), else CodeIgniter's encryption key, else `writable/kpapy/mask.key` (created the first time; to avoid it, set one of the other two). The codes are **stable**: with the same key and context they never change between versions, and any other component that applies the same algorithm with the same key produces the same codes. To use another algorithm, implement `Kpapy\IdMasker` and set it in `Config\Kpapy::$idMasker`.
 
 ### `encodeId(int|string $id, ?string $context = null): string` · `decodeId(string $value, ?string $context = null): ?string`
 

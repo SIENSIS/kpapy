@@ -185,7 +185,7 @@ Simple envelope (JSON, UTF-8, `application/json`):
 * `maskIds(bool, context)` and the config `maskIds`, `maskKey`, `idMasker`.
 * `DefaultIdMasker`: AES-256-CTR with an HMAC of the id as IV, deterministic per context (the
   table name by default); key from `maskKey`, CodeIgniter's encryption key or
-  `writable/kpapy/mask.key`. Any `Kpapy\IdMasker` implementation can replace it.
+  `writable/kpapy/mask.key`. Codes are stable across versions (fixed key-derivation labels). Any `Kpapy\IdMasker` implementation can replace it.
 * Ids of relations (input and `?include=` output) are masked with the related table's context.
 
 ## 4. Permissions
