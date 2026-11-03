@@ -47,8 +47,7 @@ Documentation is in English and Catalan: [README_EN.md](README_EN.md) · [README
 
 ## Publishing
 
-The library is installed from GitHub (`repositories` entry in `composer.json`). Recommended next step:
-tag releases (`v1.0.0`, …) following semantic versioning and submit the repository to
-[Packagist](https://packagist.org/packages/submit), with the GitHub hook so new tags are published
-automatically. Then projects can `composer require siensis/kpapy:^1.0` and get updates with
-`composer update`.
+The library is published on [Packagist](https://packagist.org/packages/siensis/kpapy) and installed
+with `composer require siensis/kpapy:dev-main`. Next step: tag releases (`v1.0.0`, …) following
+semantic versioning (with the Packagist GitHub hook, new tags are published automatically). Then
+projects can `composer require siensis/kpapy` (`^1.0`) and get updates with `composer update`.

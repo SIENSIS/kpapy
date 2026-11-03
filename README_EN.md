@@ -34,19 +34,13 @@ Features:
 
 ## Installation
 
-The library is not on Packagist yet (publishing it there, with tagged versions, is recommended; see [CHANGELOG.md](CHANGELOG.md)). Add the repository to your project's `composer.json`:
-
-```json
-"repositories": [
-    { "type": "vcs", "url": "https://github.com/SIENSIS/kpapy" }
-]
-```
-
-and install it:
+The library is published on [Packagist](https://packagist.org/packages/siensis/kpapy). Install it with Composer:
 
 ```bash
 composer require siensis/kpapy:dev-main
 ```
+
+There is no tagged release yet, so the constraint is `dev-main` (the latest commit of the `main` branch). When versions are tagged, use `composer require siensis/kpapy` (Composer will write `^1.0` or the current version) and update with `composer update siensis/kpapy`.
 
 Requirements: PHP 8.1+, CodeIgniter 4.4+. Optional:
 

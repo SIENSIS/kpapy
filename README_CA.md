@@ -34,19 +34,13 @@ Funcionalitats:
 
 ## Instal·lació
 
-La llibreria encara no és a Packagist (es recomana publicar-la-hi, amb versions etiquetades; vegeu [CHANGELOG.md](CHANGELOG.md)). Afegeix el repositori al `composer.json` del projecte:
-
-```json
-"repositories": [
-    { "type": "vcs", "url": "https://github.com/SIENSIS/kpapy" }
-]
-```
-
-i instal·la-la:
+La llibreria està publicada a [Packagist](https://packagist.org/packages/siensis/kpapy). Instal·la-la amb Composer:
 
 ```bash
 composer require siensis/kpapy:dev-main
 ```
+
+Encara no hi ha cap versió etiquetada, per això la restricció és `dev-main` (el darrer commit de la branca `main`). Quan n'hi hagi, fes servir `composer require siensis/kpapy` (Composer hi posarà `^1.0` o la versió vigent) i actualitza amb `composer update siensis/kpapy`.
 
 Requisits: PHP 8.1+, CodeIgniter 4.4+. Opcionals:
 
