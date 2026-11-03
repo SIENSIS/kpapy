@@ -1,0 +1,25 @@
+{
+    "name": "siensis/kpapy",
+    "description": "Generador automàtic d'API REST per a CodeIgniter 4 · Automatic REST API generator for CodeIgniter 4",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["codeigniter", "codeigniter4", "api", "rest", "json", "openapi", "shield"],
+    "require": {
+        "php": "^8.1",
+        "codeigniter4/framework": "^4.4"
+    },
+    "suggest": {
+        "codeigniter4/shield": "Access tokens with scopes and login for apps with two-factor authentication",
+        "siensis/kpcrudy": "Back-office CRUDs that share permissions and masked ids with the API",
+        "spomky-labs/otphp": "Built-in TOTP (authenticator app) provider for the API login"
+    },
+    "autoload": {
+        "psr-4": {
+            "Kpapy\\": "src/"
+        }
+    },
+    "archive": {
+        "exclude": ["/demo"]
+    },
+    "minimum-stability": "stable"
+}

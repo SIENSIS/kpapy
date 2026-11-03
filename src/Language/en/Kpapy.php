@@ -1,0 +1,95 @@
+<?php
+
+return [
+    // Titles of the error responses (application/problem+json)
+    'problems' => [
+        'bad-request'            => 'Bad request',
+        'unauthorized'           => 'Authentication required',
+        'forbidden'              => 'Not allowed',
+        'not-found'              => 'Not found',
+        'method-not-allowed'     => 'Method not allowed',
+        'conflict'               => 'Conflict',
+        'operation-failed'       => 'The operation could not be completed',
+        'precondition-failed'    => 'The resource has changed',
+        'precondition-required'  => 'If-Match header required',
+        'payload-too-large'      => 'Request too large',
+        'unsupported-media-type' => 'Unsupported content type',
+        'validation'             => 'Invalid data',
+        'too-many-requests'      => 'Too many requests',
+        'server-error'           => 'Server error',
+        'invalid-credentials'    => 'Invalid credentials',
+        'two-factor-required'    => 'Two-factor authentication required',
+        'invalid-code'           => 'Invalid or expired code',
+        'challenge-denied'       => 'Sign-in denied',
+    ],
+
+    // Request parameters
+    'invalidParameter' => 'Invalid value for the "{0}" parameter.',
+    'invalidFilter'    => 'The filter "{0}" is not allowed or has an invalid value.',
+    'invalidOperator'  => 'Unknown filter operator "{0}".',
+    'invalidSort'      => 'The results cannot be sorted by "{0}".',
+    'invalidField'     => 'Unknown field "{0}".',
+    'invalidInclude'   => 'Unknown relation "{0}".',
+    'invalidJson'      => 'The request body must be a JSON object.',
+
+    // Input values
+    'fieldNotWritable'    => 'This field cannot be written.',
+    'invalidRelation'     => 'The related record does not exist or is not allowed.',
+    'invalidBool'         => 'The value must be true or false.',
+    'invalidNumber'       => 'The value must be a number.',
+    'invalidDate'         => 'The value must be a date (ISO 8601).',
+    'invalidOption'       => 'The value is not one of the allowed options.',
+    'invalidText'         => 'The value must be a text.',
+    'invalidTranslation'  => 'The value must be a text or an object with one text per language.',
+    'translationRequired' => 'A value is required in "{0}".',
+    'bulkInvalid'         => 'Send an "action" and a list of "ids".',
+    'bulkUnknown'         => 'Unknown bulk action "{0}".',
+
+    // Files
+    'fileMissing'      => 'Send a file.',
+    'fileType'         => 'File type not allowed. Allowed: {0}.',
+    'fileSize'         => 'The file exceeds the maximum size of {0} KB.',
+    'invalidSignature' => 'The link is not valid or has expired.',
+
+    // Authentication
+    'auth' => [
+        'invalidCredentials' => 'The email or the password is not correct.',
+        'bannedUser'         => 'This account cannot sign in.',
+        'codeSent'           => 'A verification code has been sent to your email.',
+        'useApp'             => 'Enter the code of your authenticator app.',
+        'useWeb'             => 'Open your profile in the web application and enter the code shown there.',
+        'twoFactorRequired'  => 'Enable two-factor authentication in your web profile to sign in from an app.',
+        'invalidCode'        => 'The code is not valid or has expired.',
+        'tooManyAttempts'    => 'Too many failed attempts. Start the sign-in again.',
+        'denied'             => 'The sign-in has been denied from the web profile.',
+        'emailSubject'       => 'Your sign-in code',
+        'emailBody'          => 'Your verification code is {0}. It expires in {1} minutes. If you did not try to sign in, change your password.',
+        'pendingTitle'       => 'Pending sign-ins',
+        'pendingIntro'       => 'An app is trying to sign in with your account. If it is you, type this code in the app.',
+        'pendingDevice'      => 'Device',
+        'pendingWhen'        => 'Requested',
+        'pendingCode'        => 'Code',
+        'pendingShow'        => 'Show code',
+        'pendingDeny'        => 'It was not me',
+        'pendingNone'        => 'There are no pending sign-ins.',
+        'tokenCreated'       => 'Copy the token now: it will not be shown again.',
+    ],
+
+    // Errors of the developer (exceptions)
+    'exceptions' => [
+        'modelNotFound'     => 'Kpapy: model "{0}" not found.',
+        'missingSource'     => 'Kpapy: call setTable() or setModel() before render().',
+        'tableNotFound'     => 'Kpapy: table "{0}" does not exist.',
+        'invalidResolver'   => 'Kpapy: class "{0}" does not implement Kpapy\PermissionResolver.',
+        'invalidMasker'     => 'Kpapy: class "{0}" does not implement Kpapy\IdMasker.',
+        'invalidOperation'  => 'Kpapy: "{0}" is not a valid operation name: use lowercase letters, numbers, - and _, and not a reserved word.',
+        'translationsEmpty' => 'Kpapy: setTranslations() needs at least one field and one locale.',
+        'maskFailed'        => 'Kpapy: the identifier could not be masked.',
+        'opensslRequired'   => 'Kpapy: masking identifiers requires the openssl PHP extension.',
+        'maskKeyTooShort'   => 'Kpapy: $maskKey must be at least 32 characters long.',
+        'cannotCreateDir'   => 'Kpapy: cannot create the directory "{0}".',
+        'invalidKeyFile'    => 'Kpapy: the key file "{0}" is not valid.',
+        'invalidProvider'   => 'Kpapy: the two-factor provider "{0}" is not valid.',
+        'shieldRequired'    => 'Kpapy: this feature requires codeigniter4/shield.',
+    ],
+];
