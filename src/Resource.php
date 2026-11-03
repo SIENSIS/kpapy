@@ -33,10 +33,6 @@ use Throwable;
  *
  *     // app/Config/Routes.php
  *     Resource::routes($routes, 'api/v1/books', 'Api\Books::books', ['filter' => 'kpapy']);
- *
- * Fa servir els mateixos conceptes que kpcrudy (setResource, PermissionResolver,
- * where, hideFields, addOperation, ids emmascarats...), de manera que un projecte
- * descriu igual el web i l'API.
  */
 class Resource
 {
@@ -56,7 +52,7 @@ class Resource
     public const OPERATIONS = ['list', 'show', 'add', 'edit', 'delete', 'trash', 'restore', 'purge', 'search', 'filters', 'bulk'];
 
     /**
-     * Permisos que en pressuposen d'altres (els mateixos que kpcrudy).
+     * Permisos que en pressuposen d'altres.
      */
     public const IMPLIED_PERMISSIONS = [
         'add'     => ['list'],
@@ -827,7 +823,7 @@ class Resource
     }
 
     /**
-     * Registra totes les rutes d'un recurs amb un sol controlador (com Crud::routes() de kpcrudy).
+     * Registra totes les rutes d'un recurs amb un sol controlador.
      * Només la ruta base porta el nom ('as').
      *
      * @param array<string, mixed> $options

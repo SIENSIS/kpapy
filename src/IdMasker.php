@@ -6,7 +6,7 @@ namespace Kpapy;
 
 /**
  * Converteix els identificadors reals en codis per a les URL i les respostes, i a l'inrevés.
- * Mateixa interfície que Kpcrudy\IdMasker.
+ * Es pot substituir per una implementació pròpia (Config\Kpapy::$idMasker).
  */
 interface IdMasker
 {

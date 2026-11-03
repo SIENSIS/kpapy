@@ -339,7 +339,7 @@ final class ResourceTest extends CIUnitTestCase
         $this->assertSame(['processed' => ['2'], 'skipped' => []], $this->json($api('POST', 'books/bulk', ['action' => 'delete', 'ids' => ['2']]))['data']);
     }
 
-    public function testMaskedIdsMatchKpcrudy(): void
+    public function testMaskedIds(): void
     {
         $config          = new KpapyConfig();
         $config->maskIds = true;
@@ -352,13 +352,7 @@ final class ResourceTest extends CIUnitTestCase
         $this->assertSame(404, $this->api('GET', 'books/1', [], null, [], $config)->render()->getStatusCode());
         $this->assertSame(200, $this->api('GET', 'books/' . $code, [], null, [], $config)->render()->getStatusCode());
 
-        if (class_exists(\Kpcrudy\DefaultIdMasker::class)) {
-            $kpcrudy          = new \Kpcrudy\Config\Kpcrudy();
-            $kpcrudy->maskKey = $config->maskKey;
-            $this->assertSame((new \Kpcrudy\DefaultIdMasker($kpcrudy))->encode('1', 'kp_books'), $code);
-        } else {
-            $this->assertSame((new \Kpapy\DefaultIdMasker($config))->encode('1', 'kp_books'), $code);
-        }
+        $this->assertSame((new \Kpapy\DefaultIdMasker($config))->encode('1', 'kp_books'), $code);
     }
 
     public function testRoutingErrors(): void

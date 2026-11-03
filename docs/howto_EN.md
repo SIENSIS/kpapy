@@ -12,7 +12,7 @@ Short solutions to common cases. The full reference is in [functions_EN.md](func
 - [A TOTP provider that reads the secret from your application](#a-totp-provider-that-reads-the-secret-from-your-application)
 - [Personal tokens in the web profile](#personal-tokens-in-the-web-profile)
 - [Scopes for integrations](#scopes-for-integrations)
-- [One permission resolver for kpcrudy and kpapy](#one-permission-resolver-for-kpcrudy-and-kpapy)
+- [One permission resolver for the whole API](#one-permission-resolver-for-the-whole-api)
 - [Own records](#own-records)
 - [Uploads and private files](#uploads-and-private-files)
 - [Translations and Accept-Language](#translations-and-accept-language)
@@ -196,16 +196,16 @@ A token for an ERP that only reads books and authors:
 
 Even if the user is an administrator, that token gets `403` on any write. Scopes only restrict; they never give more than the user's permissions.
 
-### One permission resolver for kpcrudy and kpapy
-
-> Only for projects that also use kpcrudy. Without it, implement just `Kpapy\PermissionResolver` (see [functions_EN.md](functions_EN.md#interface-kpapypermissionresolver)).
+### One permission resolver for the whole API
 
 ```php
 namespace App\Libraries;
 
-class Permissions implements \Kpcrudy\PermissionResolver, \Kpapy\PermissionResolver
+use Kpapy\Resource;
+
+class Permissions implements \Kpapy\PermissionResolver
 {
-    public function allows(string $resource, string $operation, ?array $row, object $crudOrApi): ?bool
+    public function allows(string $resource, string $operation, ?array $row, Resource $api): ?bool
     {
         $user = auth()->user();
 
@@ -223,12 +223,12 @@ class Permissions implements \Kpcrudy\PermissionResolver, \Kpapy\PermissionResol
 ```
 
 ```php
-// app/Config/Kpcrudy.php and app/Config/Kpapy.php
+// app/Config/Kpapy.php
 public ?string $permissionResolver = \App\Libraries\Permissions::class;
 public bool $denyByDefault         = true;
 ```
 
-Use the same `setResource('library-books')` in the CRUD and in the API resource: a grant applies to both. With masked ids enabled in both libraries and the same key, the ids are identical too.
+Each resource names its permissions with `setResource('library-books')`: the Shield permission `library-books.edit` (or the wildcard `library-books.*`) lets a user edit books through the API. `php spark kpapy:routes` lists the permissions every resource asks about.
 
 ### Own records
 

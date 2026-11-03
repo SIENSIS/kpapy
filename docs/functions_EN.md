@@ -19,7 +19,7 @@ use Kpapy\Resource;
 - [Operations and HTTP](#operations-and-http): the mapping table, input, output, ETags
 - [Custom operations and bulk actions](#custom-operations-and-bulk-actions): `addOperation`, `addBulkAction`, `fail`
 - [Hooks](#hooks): `beforeInsert`, `afterInsert`, `beforeUpdate`, `afterUpdate`, `beforeDelete`, `afterDelete`, `afterRestore`, `afterWrite`
-- [Permissions](#permissions): `setPermission`, `unset*`, `readOnly`, `setResource`, `setPermissionResolver`, `isAllowed`, `permissionCatalogue`, `impliedPermissions`, `PermissionResolver`, scopes, own records, `KpcrudyResolver`
+- [Permissions](#permissions): `setPermission`, `unset*`, `readOnly`, `setResource`, `setPermissionResolver`, `isAllowed`, `permissionCatalogue`, `impliedPermissions`, `PermissionResolver`, scopes, own records
 - [Masked ids](#masked-ids): `maskIds`, `encodeId`, `decodeId`
 - [Files](#files): upload fields, signed URLs
 - [Access from callbacks](#access-from-callbacks): `getTable`, `getPrimaryKey`, `getConfig`, `getRequest`, `user`, `url`, `masksIds`
@@ -199,7 +199,7 @@ $api->setRelationNN('tags', 'book_tag', 'tags', 'book_id', 'tag_id', ['name']);
 
 ### `setTranslations(string $table, string $foreignKey, string $localeField, array $fields, array $locales, array $options = []): static`
 
-Translated fields stored in a child table, one row per language (as kpcrudy's `setTranslations()`). Options: `required` (languages that must have the fields; default, the first one).
+Translated fields stored in a child table, one row per language. Options: `required` (languages that must have the fields; default, the first one).
 
 ```php
 $api->setTranslations('book_translations', 'book_id', 'locale', ['summary'], ['en', 'ca', 'es'], ['required' => ['en']]);
@@ -329,7 +329,6 @@ Stops the operation (or a hook) with an error for the client.
 
 ## Hooks
 
-Same signatures as kpcrudy:
 
 | Hook | Signature | Return |
 |---|---|---|
@@ -390,9 +389,9 @@ interface PermissionResolver
 Configured for every resource in `Config\Kpapy::$permissionResolver`, or for one with `setPermissionResolver()`. Example backed by Shield (`search`, `filters` and `bulk` mapped to `list`):
 
 ```php
-class Permissions implements \Kpapy\PermissionResolver, \Kpcrudy\PermissionResolver
+class Permissions implements \Kpapy\PermissionResolver
 {
-    public function allows(string $resource, string $operation, ?array $row, object $api): ?bool
+    public function allows(string $resource, string $operation, ?array $row, Resource $api): ?bool
     {
         $user = auth()->user();
 
@@ -407,7 +406,7 @@ class Permissions implements \Kpapy\PermissionResolver, \Kpcrudy\PermissionResol
 }
 ```
 
-A class can implement **both** interfaces (`Kpapy\PermissionResolver` and `Kpcrudy\PermissionResolver`), so the web and the API share one source of truth (declare the last parameter as `object`). The answers without a record are cached per resource instance.
+One class decides the permissions of the whole API. The answers without a record are cached per resource instance.
 
 ### `setPermissionResolver(PermissionResolver|Closure|null $resolver): static`
 
@@ -436,20 +435,6 @@ There is no special permission:
 - users that must only **see** their own records → `where('user_id', $id)`;
 - users that see everything but only **change** their own → a per-record `setPermission('edit', fn (?array $row) => …)` closure or the resolver, which receive the record.
 
-### `Kpapy\Bridge\KpcrudyResolver`
-
-Adapts an existing kpcrudy resolver that cannot implement both interfaces:
-
-```php
-class ApiPermissions extends \Kpapy\Bridge\KpcrudyResolver
-{
-    public function __construct()
-    {
-        parent::__construct(new \App\Libraries\CrudPermissions());
-    }
-}
-```
-
 ---
 
 ## Masked ids
@@ -458,9 +443,7 @@ class ApiPermissions extends \Kpapy\Bridge\KpcrudyResolver
 
 Masks the ids of this resource (`Config\Kpapy::$maskIds` does it for every resource): the primary key in URLs and responses, relation ids (with the related table as context), cursors and bulk ids. A forged or altered code is `404`.
 
-The codes are **identical to kpcrudy's**: same algorithm (AES-256-CTR with an HMAC of the id as IV), same key (`Config\Kpapy::$maskKey`, else `Config\Kpcrudy::$maskKey`, else CodeIgniter's encryption key, else `writable/kpcrudy/mask.key`) and same context (the table name). A record has the same id in the back office and in the API.
-
-Without kpcrudy this works the same way: `Config\Kpcrudy::$maskKey` is simply skipped. The last fallback, `writable/kpcrudy/mask.key`, keeps kpcrudy's file name on purpose: it is only created when no key is configured at all (not even CodeIgniter's encryption key), and if kpcrudy is added later both libraries read the same file and the ids still match. To avoid the file, set `Config\Kpapy::$maskKey` (32+ characters) or `encryption.key` in `.env`.
+Algorithm: AES-256-CTR with an HMAC of the id as IV, so a record always has the same code in a context (the table name) and a code of one table is useless in another. Key: `Config\Kpapy::$maskKey` (32+ characters), else CodeIgniter's encryption key, else `writable/kpapy/mask.key` (created the first time; to avoid it, set one of the other two). To use another algorithm, implement `Kpapy\IdMasker` and set it in `Config\Kpapy::$idMasker`.
 
 ### `encodeId(int|string $id, ?string $context = null): string` · `decodeId(string $value, ?string $context = null): ?string`
 
@@ -640,7 +623,7 @@ Name and description of the resource in the OpenAPI document. Custom operations 
 | `inferRules` | `true` | Validation rules from the table |
 | `requireIfMatch` | `false` | Writes need `If-Match` (`428`) |
 | `sensitiveFields` | `password`, `token`, `secret`… | Never returned unless listed |
-| `maskIds`, `maskKey`, `idMasker` | `false`, `''`, `DefaultIdMasker` | Masked ids (compatible with kpcrudy) |
+| `maskIds`, `maskKey`, `idMasker` | `false`, `''`, `DefaultIdMasker` | Masked ids |
 | `permissionResolver` | `null` | Class implementing `Kpapy\PermissionResolver` |
 | `denyByDefault` | `false` | Deny what nobody allows |
 | `checkScopes` | `true` | Apply the token scopes |

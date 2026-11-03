@@ -158,8 +158,8 @@ trait Schema
     }
 
     /**
-     * Amaga camps de tot arreu (sortida, filtres, cerca, ordenació i entrada), com
-     * hideFields() de kpcrudy. Té prioritat sobre les altres llistes.
+     * Amaga camps de tot arreu (sortida, filtres, cerca, ordenació i entrada).
+     * Té prioritat sobre les altres llistes.
      *
      * @param list<string> $fields
      */
@@ -316,7 +316,7 @@ trait Schema
     }
 
     /**
-     * Camps traduïts en una taula filla, una fila per idioma (com setTranslations() de kpcrudy).
+     * Camps traduïts en una taula filla, una fila per idioma.
      * Surten en l'idioma demanat (?lang=ca o Accept-Language) o tots amb ?lang=*.
      *
      * @param list<string>                       $fields

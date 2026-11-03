@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Kpapy;
 
 /**
- * Decideix els permisos de tots els recursos de l'API des d'un sol lloc. Mateixa
- * semàntica que Kpcrudy\PermissionResolver: una mateixa classe pot implementar totes
- * dues interfícies.
+ * Decideix els permisos de tots els recursos de l'API des d'un sol lloc.
  *
  * El resolutor té l'última paraula si denega; si permet o no opina (null), les regles
  * de setPermission() encara poden restringir.

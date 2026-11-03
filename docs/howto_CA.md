@@ -12,7 +12,7 @@ Solucions breus per a casos habituals. La referència completa és a [functions_
 - [Un proveïdor TOTP que llegeix el secret de l'aplicació](#un-proveïdor-totp-que-llegeix-el-secret-de-laplicació)
 - [Tokens personals al perfil web](#tokens-personals-al-perfil-web)
 - [Abasts per a integracions](#abasts-per-a-integracions)
-- [Un sol resolutor de permisos per a kpcrudy i kpapy](#un-sol-resolutor-de-permisos-per-a-kpcrudy-i-kpapy)
+- [Un sol resolutor de permisos per a tota l'API](#un-sol-resolutor-de-permisos-per-a-tota-lapi)
 - [Registres propis](#registres-propis)
 - [Pujada de fitxers i fitxers privats](#pujada-de-fitxers-i-fitxers-privats)
 - [Traduccions i Accept-Language](#traduccions-i-accept-language)
@@ -196,16 +196,16 @@ Un token per a un ERP que només llegeix llibres i autors:
 
 Encara que l'usuari sigui administrador, aquest token rep `403` a qualsevol escriptura. Els abasts només restringeixen; mai no donen més que els permisos de l'usuari.
 
-### Un sol resolutor de permisos per a kpcrudy i kpapy
-
-> Només per als projectes que també fan servir kpcrudy. Sense kpcrudy, implementa només `Kpapy\PermissionResolver` (vegeu [functions_CA.md](functions_CA.md#interfície-kpapypermissionresolver)).
+### Un sol resolutor de permisos per a tota l'API
 
 ```php
 namespace App\Libraries;
 
-class Permissions implements \Kpcrudy\PermissionResolver, \Kpapy\PermissionResolver
+use Kpapy\Resource;
+
+class Permissions implements \Kpapy\PermissionResolver
 {
-    public function allows(string $resource, string $operation, ?array $row, object $crudOrApi): ?bool
+    public function allows(string $resource, string $operation, ?array $row, Resource $api): ?bool
     {
         $user = auth()->user();
 
@@ -223,12 +223,12 @@ class Permissions implements \Kpcrudy\PermissionResolver, \Kpapy\PermissionResol
 ```
 
 ```php
-// app/Config/Kpcrudy.php i app/Config/Kpapy.php
+// app/Config/Kpapy.php
 public ?string $permissionResolver = \App\Libraries\Permissions::class;
 public bool $denyByDefault         = true;
 ```
 
-Fes servir el mateix `setResource('library-books')` al CRUD i al recurs de l'API: un permís concedit val per als dos. Amb els identificadors emmascarats activats a les dues llibreries i la mateixa clau, els id també són idèntics.
+Cada recurs anomena els seus permisos amb `setResource('library-books')`: el permís de Shield `library-books.edit` (o el comodí `library-books.*`) deixa editar llibres a través de l'API. `php spark kpapy:routes` llista els permisos que demana cada recurs.
 
 ### Registres propis
 

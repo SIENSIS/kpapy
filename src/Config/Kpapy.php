@@ -51,7 +51,7 @@ class Kpapy extends BaseConfig
     public int $maxBodySize = 1024;
 
     /**
-     * Dedueix regles de validació de l'estructura de la taula (com kpcrudy).
+     * Dedueix regles de validació de l'estructura de la taula.
      */
     public bool $inferRules = true;
 
@@ -73,18 +73,17 @@ class Kpapy extends BaseConfig
     ];
 
     // ------------------------------------------------------------------
-    // Identificadors emmascarats (compatibles amb kpcrudy)
+    // Identificadors emmascarats
     // ------------------------------------------------------------------
 
     /**
-     * Emmascara els identificadors de totes les respostes i URL. Amb la mateixa clau i
-     * context, els codis són idèntics als de kpcrudy.
+     * Emmascara els identificadors de totes les respostes i URL.
      */
     public bool $maskIds = false;
 
     /**
-     * Clau per emmascarar. Buida: la de Config\Kpcrudy si existeix, la d'encriptació de
-     * CodeIgniter o writable/kpcrudy/mask.key (el mateix ordre que kpcrudy).
+     * Clau per emmascarar (32 caràcters o més). Buida: la d'encriptació de CodeIgniter o,
+     * si no n'hi ha, writable/kpapy/mask.key.
      */
     public string $maskKey = '';
 
@@ -99,7 +98,6 @@ class Kpapy extends BaseConfig
 
     /**
      * Classe que decideix els permisos de tots els recursos (Kpapy\PermissionResolver).
-     * Una mateixa classe pot implementar també Kpcrudy\PermissionResolver.
      *
      * @var class-string<\Kpapy\PermissionResolver>|null
      */

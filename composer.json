@@ -10,7 +10,6 @@
     },
     "suggest": {
         "codeigniter4/shield": "Access tokens with scopes and login for apps with two-factor authentication",
-        "siensis/kpcrudy": "Back-office CRUDs that share permissions and masked ids with the API",
         "spomky-labs/otphp": "Built-in TOTP (authenticator app) provider for the API login"
     },
     "autoload": {

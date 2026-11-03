@@ -10,26 +10,19 @@ use RuntimeException;
 /**
  * Clau secreta de la llibreria (emmascarar identificadors, signar URL de fitxers).
  *
- * Mateix origen i mateixa derivació que Kpcrudy\Secret, perquè els codis coincideixin:
- * Config\Kpapy::$maskKey, Config\Kpcrudy::$maskKey (si kpcrudy hi és), la clau
- * d'encriptació de CodeIgniter o writable/kpcrudy/mask.key.
+ * Origen: Config\Kpapy::$maskKey, la clau d'encriptació de CodeIgniter o, si no n'hi ha
+ * cap, writable/kpapy/mask.key (es crea la primera vegada). Cada ús en deriva una clau pròpia.
  */
 final class Secret
 {
     public static function key(KpapyConfig $config, string $purpose): string
     {
-        // El prefix és el de kpcrudy a propòsit: les claus derivades han de ser les mateixes
-        return hash_hmac('sha256', 'kpcrudy-' . $purpose, self::source($config), true);
+        return hash_hmac('sha256', 'kpapy-' . $purpose, self::source($config), true);
     }
 
     private static function source(KpapyConfig $config): string
     {
         $key = $config->maskKey;
-
-        if ($key === '' && class_exists(\Kpcrudy\Config\Kpcrudy::class)) {
-            $kpcrudy = config('Kpcrudy');
-            $key     = is_object($kpcrudy) && is_string($kpcrudy->maskKey ?? null) ? $kpcrudy->maskKey : '';
-        }
 
         if ($key !== '') {
             if (strlen($key) < 32) {
@@ -45,7 +38,7 @@ final class Secret
             return $encryption->key;
         }
 
-        return self::fileKey(WRITEPATH . 'kpcrudy' . DIRECTORY_SEPARATOR . 'mask.key');
+        return self::fileKey(WRITEPATH . 'kpapy' . DIRECTORY_SEPARATOR . 'mask.key');
     }
 
     private static function fileKey(string $file): string

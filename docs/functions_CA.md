@@ -19,7 +19,7 @@ use Kpapy\Resource;
 - [Operacions i HTTP](#operacions-i-http): la taula de correspondències, entrada, sortida, ETag
 - [Operacions pròpies i accions massives](#operacions-pròpies-i-accions-massives): `addOperation`, `addBulkAction`, `fail`
 - [Hooks](#hooks): `beforeInsert`, `afterInsert`, `beforeUpdate`, `afterUpdate`, `beforeDelete`, `afterDelete`, `afterRestore`, `afterWrite`
-- [Permisos](#permisos): `setPermission`, `unset*`, `readOnly`, `setResource`, `setPermissionResolver`, `isAllowed`, `permissionCatalogue`, `impliedPermissions`, `PermissionResolver`, abasts, registres propis, `KpcrudyResolver`
+- [Permisos](#permisos): `setPermission`, `unset*`, `readOnly`, `setResource`, `setPermissionResolver`, `isAllowed`, `permissionCatalogue`, `impliedPermissions`, `PermissionResolver`, abasts, registres propis
 - [Identificadors emmascarats](#identificadors-emmascarats): `maskIds`, `encodeId`, `decodeId`
 - [Fitxers](#fitxers): camps de pujada, URL signades
 - [Accés des dels callbacks](#accés-des-dels-callbacks): `getTable`, `getPrimaryKey`, `getConfig`, `getRequest`, `user`, `url`, `masksIds`
@@ -199,7 +199,7 @@ $api->setRelationNN('tags', 'book_tag', 'tags', 'book_id', 'tag_id', ['name']);
 
 ### `setTranslations(string $table, string $foreignKey, string $localeField, array $fields, array $locales, array $options = []): static`
 
-Camps traduïts en una taula filla, una fila per idioma (com `setTranslations()` de kpcrudy). Opcions: `required` (idiomes que han de tenir els camps; per defecte, el primer).
+Camps traduïts en una taula filla, una fila per idioma. Opcions: `required` (idiomes que han de tenir els camps; per defecte, el primer).
 
 ```php
 $api->setTranslations('book_translations', 'book_id', 'locale', ['summary'], ['en', 'ca', 'es'], ['required' => ['en']]);
@@ -329,7 +329,6 @@ Atura l'operació (o un hook) amb un error per al client.
 
 ## Hooks
 
-Les mateixes signatures que kpcrudy:
 
 | Hook | Signatura | Retorn |
 |---|---|---|
@@ -390,9 +389,9 @@ interface PermissionResolver
 Es configura per a tots els recursos a `Config\Kpapy::$permissionResolver`, o per a un amb `setPermissionResolver()`. Exemple amb Shield (`search`, `filters` i `bulk` com a `list`):
 
 ```php
-class Permissions implements \Kpapy\PermissionResolver, \Kpcrudy\PermissionResolver
+class Permissions implements \Kpapy\PermissionResolver
 {
-    public function allows(string $resource, string $operation, ?array $row, object $api): ?bool
+    public function allows(string $resource, string $operation, ?array $row, Resource $api): ?bool
     {
         $user = auth()->user();
 
@@ -407,7 +406,7 @@ class Permissions implements \Kpapy\PermissionResolver, \Kpcrudy\PermissionResol
 }
 ```
 
-Una classe pot implementar **totes dues** interfícies (`Kpapy\PermissionResolver` i `Kpcrudy\PermissionResolver`), de manera que el web i l'API comparteixen una sola font de veritat (declara el darrer paràmetre com a `object`). Les respostes sense registre es desen per a cada instància del recurs.
+Una sola classe decideix els permisos de tota l'API. Les respostes sense registre es desen per a cada instància del recurs.
 
 ### `setPermissionResolver(PermissionResolver|Closure|null $resolver): static`
 
@@ -436,20 +435,6 @@ No hi ha cap permís especial:
 - l'usuari només ha de **veure** els seus registres → `where('user_id', $id)`;
 - l'usuari ho veu tot però només **modifica** els seus → una closure `setPermission('edit', fn (?array $row) => …)` o el resolutor, que reben el registre.
 
-### `Kpapy\Bridge\KpcrudyResolver`
-
-Adapta un resolutor de kpcrudy que ja existeix i que no pot implementar les dues interfícies:
-
-```php
-class ApiPermissions extends \Kpapy\Bridge\KpcrudyResolver
-{
-    public function __construct()
-    {
-        parent::__construct(new \App\Libraries\CrudPermissions());
-    }
-}
-```
-
 ---
 
 ## Identificadors emmascarats
@@ -458,9 +443,7 @@ class ApiPermissions extends \Kpapy\Bridge\KpcrudyResolver
 
 Emmascara els identificadors d'aquest recurs (`Config\Kpapy::$maskIds` ho fa per a tots): la clau primària a les URL i les respostes, els id de les relacions (amb la taula relacionada com a context), els cursors i els id de les accions massives. Un codi fals o modificat és `404`.
 
-Els codis són **idèntics als de kpcrudy**: mateix algorisme (AES-256-CTR amb un HMAC de l'id com a vector inicial), mateixa clau (`Config\Kpapy::$maskKey`; si no, `Config\Kpcrudy::$maskKey`; si no, la clau d'encriptació de CodeIgniter; si no, `writable/kpcrudy/mask.key`) i mateix context (el nom de la taula). Un registre té el mateix id al back office i a l'API.
-
-Sense kpcrudy funciona igual: simplement se salta `Config\Kpcrudy::$maskKey`. El darrer recurs, `writable/kpcrudy/mask.key`, conserva a propòsit el nom de fitxer de kpcrudy: només es crea si no hi ha cap clau configurada (ni tan sols la d'encriptació de CodeIgniter), i si més endavant s'hi afegeix kpcrudy, totes dues llibreries llegeixen el mateix fitxer i els ids continuen coincidint. Per evitar el fitxer, configura `Config\Kpapy::$maskKey` (32 caràcters o més) o `encryption.key` al `.env`.
+Algorisme: AES-256-CTR amb un HMAC de l'id com a vector inicial, de manera que un registre té sempre el mateix codi en un context (el nom de la taula) i el codi d'una taula no serveix per a una altra. Clau: `Config\Kpapy::$maskKey` (32 caràcters o més); si no, la clau d'encriptació de CodeIgniter; si no, `writable/kpapy/mask.key` (es crea la primera vegada; per evitar-lo, configura una de les altres dues). Per fer servir un altre algorisme, implementa `Kpapy\IdMasker` i indica'l a `Config\Kpapy::$idMasker`.
 
 ### `encodeId(int|string $id, ?string $context = null): string` · `decodeId(string $value, ?string $context = null): ?string`
 
@@ -640,7 +623,7 @@ Nom i descripció del recurs al document OpenAPI. Les operacions pròpies i les 
 | `inferRules` | `true` | Regles de validació de la taula |
 | `requireIfMatch` | `false` | Les escriptures necessiten `If-Match` (`428`) |
 | `sensitiveFields` | `password`, `token`, `secret`… | No es retornen si no es demanen |
-| `maskIds`, `maskKey`, `idMasker` | `false`, `''`, `DefaultIdMasker` | Identificadors emmascarats (compatibles amb kpcrudy) |
+| `maskIds`, `maskKey`, `idMasker` | `false`, `''`, `DefaultIdMasker` | Identificadors emmascarats |
 | `permissionResolver` | `null` | Classe que implementa `Kpapy\PermissionResolver` |
 | `denyByDefault` | `false` | Denega el que ningú permet |
 | `checkScopes` | `true` | Aplica els abasts del token |

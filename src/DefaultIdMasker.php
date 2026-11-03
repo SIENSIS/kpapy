@@ -8,10 +8,9 @@ use Kpapy\Config\Kpapy as KpapyConfig;
 use RuntimeException;
 
 /**
- * Emmascarador per defecte. Fa servir exactament el mateix algorisme que
- * Kpcrudy\DefaultIdMasker (AES-256-CTR amb un HMAC de l'id com a vector inicial), de
- * manera que, amb la mateixa clau i context, un registre té el mateix codi al web
- * (kpcrudy) i a l'API.
+ * Emmascarador per defecte: AES-256-CTR amb un HMAC de l'id com a vector inicial. És
+ * determinista (un id té sempre el mateix codi en un context) i el context (el nom de la
+ * taula) fa que l'id d'una taula no serveixi per a una altra.
  */
 class DefaultIdMasker implements IdMasker
 {

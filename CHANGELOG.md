@@ -7,7 +7,7 @@ Documentation is in English and Catalan: [README_EN.md](README_EN.md) · [README
 
 ### Added
 
-- **Resources** (`Kpapy\Resource`) from a table or a model with a fluent API in the style of kpcrudy:
+- **Resources** (`Kpapy\Resource`) from a table or a model with a fluent API:
   fields, list fields, write fields (mass-assignment protection, `strictInput`), `hideFields()`,
   read-only, required and default values, validation rules (also inferred from the table), field types
   (int, float, decimal, bool, date, datetime, json, enum, multiselect, password, upload/image, virtual),
@@ -25,10 +25,10 @@ Documentation is in English and Catalan: [README_EN.md](README_EN.md) · [README
 - **Responses** with a simple envelope (`data`, `meta`, `links`), errors as RFC 9457
   `application/problem+json` translated into six languages, ETags, conditional `GET` (`304`) and optimistic
   concurrency with `If-Match` (`412`, `428` with `requireIfMatch`).
-- **Permissions**: `PermissionResolver` with the same semantics as kpcrudy (one class can implement both),
+- **Permissions**: a central `PermissionResolver`,
   `setResource()`, `setPermission()`, `unset*()`, `readOnly()`, `isAllowed()`, `permissionCatalogue()`,
-  `impliedPermissions()`, `denyByDefault`, and `Kpapy\Bridge\KpcrudyResolver`.
-- **Masked ids** identical to kpcrudy's (same algorithm, key and context).
+  `impliedPermissions()`, `denyByDefault`.
+- **Masked ids** (AES-256-CTR, deterministic per table, replaceable `IdMasker`).
 - The **`kpapy` filter**: Shield access tokens or HMAC tokens, public and optional modes, token scopes
   intersected with permissions, CORS, rate limits per token, per IP and for the login, HTTPS in production.
 - **App login with two-factor authentication** (`AuthRoutes::register()`): the user's active method
