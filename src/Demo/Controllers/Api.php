@@ -128,6 +128,7 @@ class Api extends Controller
             ->searchFields(['title'])
             ->defaultOrder('title')
             ->readOnly()
+            ->unsetTrash()
             ->render();
     }
 

@@ -6,6 +6,7 @@ namespace Kpapy;
 
 use Closure;
 use CodeIgniter\Database\BaseConnection;
+use CodeIgniter\HTTP\CLIRequest;
 use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\Model;
@@ -70,7 +71,7 @@ class Resource
     ];
 
     protected KpapyConfig $config;
-    protected IncomingRequest $request;
+    protected IncomingRequest|CLIRequest $request;
     protected Responder $responder;
 
     protected ?string $table = null;
@@ -646,7 +647,7 @@ class Resource
         return $this->config;
     }
 
-    public function getRequest(): IncomingRequest
+    public function getRequest(): IncomingRequest|CLIRequest
     {
         return $this->request;
     }

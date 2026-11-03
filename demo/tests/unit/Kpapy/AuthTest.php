@@ -112,6 +112,12 @@ final class AuthTest extends CIUnitTestCase
         [, $body] = $this->login();
         $pending  = (new Challenges(new KpapyConfig()))->pendingFor($this->user->id);
 
+        // The web profile view shows the device, the code and a deny form
+        $html = html_entity_decode(AuthRoutes::pendingLogins($this->user->id, 'profile'));
+        $this->assertStringContainsString('Phone', $html);
+        $this->assertStringContainsString(chunk_split($pending[0]['code'], 3, ' '), $html);
+        $this->assertStringContainsString('/profile/api-logins/' . $pending[0]['id'] . '/deny', $html);
+
         $this->assertTrue((new Challenges(new KpapyConfig()))->deny($pending[0]['id'], $this->user->id));
         $this->withBodyFormat('json')->post('api/v1/auth/token/verify', ['challenge' => $body['data']['challenge'], 'code' => $pending[0]['code']])->assertStatus(422);
     }
