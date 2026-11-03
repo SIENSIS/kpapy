@@ -249,10 +249,13 @@ Simple envelope (JSON, UTF-8, `application/json`):
      * if the user has a 2FA method enabled (email code, TOTP app…), the response is
        `202 Accepted` with `{"challenge": "<id>", "method": "email|totp", "expires_in": 300}`
        (for email, the code is sent now);
-     * if the user has **no 2FA enabled**, login through the API is **refused**
-       (`403` with a problem type `two-factor-required` and a link to the web profile): the
-       user must enable 2FA in the web profile first. (A project can relax this per group with
-       a setting, but the default is strict.)
+     * if the user has **no 2FA enabled**, the **web code** method is used: the response is
+       also `202` with `{"challenge": "<id>", "method": "web", "profile_url": "...",
+       "expires_in": 300}`, and the app tells the user to open their profile in the web
+       application (logged in as usual). The profile shows the pending sign-in ("New sign-in
+       from <device name>, <time>") with a **6-digit validation code**, and buttons to see the
+       code or deny the sign-in. The user types that code in the app to finish. Nothing is
+       sent by email or SMS: having an active web session is the second factor.
 2. `POST /auth/token/verify` with `{"challenge", "code"}` (or a recovery code) → `201` with
    `{"token": "...", "expires_at": "...", "scopes": [...]}`. Challenges are single-use, expire,
    and lock after a few failed attempts.
@@ -260,9 +263,16 @@ Simple envelope (JSON, UTF-8, `application/json`):
    (optional) rotates it before it expires.
 
 * 2FA methods are pluggable through a `TwoFactorProvider` interface (`methodFor(User)`,
-  `start(User)`, `verify(User, code)`); kpapy ships an **email** provider based on Shield's
-  email 2FA and a **TOTP** provider interface the application implements (or an optional TOTP
-  provider when `spomky-labs/otphp` is installed).
+  `start(User)`, `verify(User, code)`); kpapy ships:
+  * an **email** provider (a 6-digit code sent to the user's email);
+  * a **TOTP** provider interface the application implements (or an optional TOTP provider when
+    `spomky-labs/otphp` is installed);
+  * the **web code** provider, used when the user has no other method: pending sign-ins are
+    stored (`kpapy_login_challenges`: user, device, IP, code hash, status, expiry) and kpapy
+    provides a service (`pendingFor(User)`, `deny()`) and a view partial for the application's
+    profile page that lists them with their codes (the code is generated on the server, shown
+    only to the logged-in owner and stored hashed after it is displayed).
+  A project decides which methods are allowed and their order (config `twoFactorMethods`).
 * Every login, failed attempt, token creation and revocation is reported through an event
   (`kpapy.auth.*`) so the application can log it.
 
