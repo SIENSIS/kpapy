@@ -11,7 +11,7 @@ La demo va dins de la llibreria (`src/Demo`) i s'instal·la en qualsevol project
 ## Instal·lar-la al teu projecte
 
 ```bash
-composer require siensis/kpapy:dev-main codeigniter4/shield   # si encara no hi són
+composer require siensis/kpapy codeigniter4/shield   # si encara no hi són
 php spark shield:setup                                         # només la primera vegada que s'instal·la Shield
 php spark migrate --all            # taules de Shield i de kpapy (kpapy_login_challenges)
 php spark kpapy:demo install

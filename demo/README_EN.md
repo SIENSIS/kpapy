@@ -11,7 +11,7 @@ The demo ships inside the library (`src/Demo`) and is installed in any CodeIgnit
 ## Installing it in your project
 
 ```bash
-composer require siensis/kpapy:dev-main codeigniter4/shield   # if they are not installed yet
+composer require siensis/kpapy codeigniter4/shield   # if they are not installed yet
 php spark shield:setup                                         # only the first time Shield is installed
 php spark migrate --all            # Shield and kpapy tables (kpapy_login_challenges)
 php spark kpapy:demo install

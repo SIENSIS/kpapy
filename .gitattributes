@@ -1,0 +1,4 @@
+# Left out of the Composer package (dist archive); docs/ and src/Demo stay
+/demo          export-ignore
+/screenshots   export-ignore
+/.gitattributes export-ignore

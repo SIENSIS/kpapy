@@ -5,6 +5,8 @@ Documentation is in English and Catalan: [README_EN.md](README_EN.md) · [README
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-03
+
 ### Added
 
 - **Resources** (`Kpapy\Resource`) from a table or a model with a fluent API:
@@ -51,7 +53,11 @@ Documentation is in English and Catalan: [README_EN.md](README_EN.md) · [README
 
 ## Publishing
 
-The library is published on [Packagist](https://packagist.org/packages/siensis/kpapy) and installed
-with `composer require siensis/kpapy:dev-main`. Next step: tag releases (`v1.0.0`, …) following
-semantic versioning (with the Packagist GitHub hook, new tags are published automatically). Then
-projects can `composer require siensis/kpapy` (`^1.0`) and get updates with `composer update`.
+Published on [Packagist](https://packagist.org/packages/siensis/kpapy) from the Git tags
+(`vX.Y.Z`, semantic versioning). Install with `composer require siensis/kpapy` (`^1.0`) and update
+with `composer update siensis/kpapy`. The Composer package does not include the test application
+(`demo/`) nor the screenshots (`.gitattributes`); the documentation (`docs/`) and the integrated
+demo (`src/Demo`) are included.
+
+[Unreleased]: https://github.com/SIENSIS/kpapy/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/SIENSIS/kpapy/releases/tag/v1.0.0

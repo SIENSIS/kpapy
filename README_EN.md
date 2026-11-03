@@ -44,10 +44,10 @@ More in [screenshots/](screenshots/README.md).
 The library is published on [Packagist](https://packagist.org/packages/siensis/kpapy). Install it with Composer:
 
 ```bash
-composer require siensis/kpapy:dev-main
+composer require siensis/kpapy
 ```
 
-There is no tagged release yet, so the constraint is `dev-main` (the latest commit of the `main` branch). When versions are tagged, use `composer require siensis/kpapy` (Composer will write `^1.0` or the current version) and update with `composer update siensis/kpapy`.
+Composer adds the constraint `^1.0` to your `composer.json`; `composer update siensis/kpapy` brings the new 1.x versions (no breaking changes within a major version, see [CHANGELOG.md](CHANGELOG.md)).
 
 Requirements: PHP 8.1+, CodeIgniter 4.4+. Optional:
 

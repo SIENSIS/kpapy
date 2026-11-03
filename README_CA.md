@@ -44,10 +44,10 @@ Més captures a [screenshots/](screenshots/README.md).
 La llibreria està publicada a [Packagist](https://packagist.org/packages/siensis/kpapy). Instal·la-la amb Composer:
 
 ```bash
-composer require siensis/kpapy:dev-main
+composer require siensis/kpapy
 ```
 
-Encara no hi ha cap versió etiquetada, per això la restricció és `dev-main` (el darrer commit de la branca `main`). Quan n'hi hagi, fes servir `composer require siensis/kpapy` (Composer hi posarà `^1.0` o la versió vigent) i actualitza amb `composer update siensis/kpapy`.
+Composer afegeix la restricció `^1.0` al `composer.json`; `composer update siensis/kpapy` porta les noves versions 1.x (sense canvis incompatibles dins d'una versió principal; vegeu [CHANGELOG.md](CHANGELOG.md)).
 
 Requisits: PHP 8.1+, CodeIgniter 4.4+. Opcionals:
 
