@@ -250,6 +250,14 @@ class Kpapy extends BaseConfig
     public bool $docsInProduction = false;
 
     /**
+     * Opció "Prova-ho" de la pàgina de documentació: un formulari a cada endpoint per enviar
+     * peticions reals amb un token (o iniciant la sessió com una app) i veure la resposta.
+     * null: només fora de producció; true: sempre que es mostri la pàgina; false: mai.
+     * Les peticions passen pels mateixos permisos, abasts i límits que qualsevol altra.
+     */
+    public ?bool $docsTryIt = null;
+
+    /**
      * Base de les URL dels tipus d'error (problem+json). Buit: about:blank amb el codi.
      */
     public string $problemTypeBase = '';

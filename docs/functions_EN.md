@@ -616,7 +616,9 @@ Name and description of the resource in the OpenAPI document. Custom operations 
 
 ### `Kpapy\OpenApi\DocsController::routes(RouteCollection $routes, string $path = 'api/v1/docs', array $options = []): void` (static)
 
-`GET <path>`: a documentation page (HTML, no JavaScript, CSP-friendly, light and dark); `GET <path>/openapi.json`: the OpenAPI 3.1 document (for Swagger UI, Postman, code generators…). Not available in production unless `docsInProduction`. To restrict it to some paths or use another configuration, extend it and redefine `prefix()` and `kpapy()`.
+`GET <path>`: a documentation page (HTML, CSP-friendly, light and dark); `GET <path>/openapi.json`: the OpenAPI 3.1 document (for Swagger UI, Postman, code generators…); `GET <path>/try-it.js`: the script of "Try it". Not available in production unless `docsInProduction`. To restrict it to some paths or use another configuration, extend it and redefine `prefix()` and `kpapy()` (and `tryIt()` to decide "Try it" with your own rule, e.g. only for administrators).
+
+**Try it** (`docsTryIt`; by default only outside production): every endpoint has a form with its path, query and header parameters (`If-Match` for `PATCH`, `PUT` and `DELETE`), a free field for other query parameters (`purge=1`, `filter[year][gte]=2000`…) and, for `POST`, `PATCH` and `PUT`, a JSON body prefilled from the schema (`Kpapy\OpenApi\Example`; files are not sent from here). **Send** shows the status, the useful headers (`ETag`, `Location`, `Retry-After`…) and the formatted body; **Copy as curl** copies the same request. The panel at the top takes an access token or, when the API has the sign-in routes (`AuthRoutes::register()`), signs in like an app in two steps (password, then the code of the user's second factor or of the web profile). The token is kept only in the tab's memory. The requests are real: same permissions, token scopes, rate limits and data as any other client. The script is an external file (`try-it.js`), so the page has no inline code and works with a strict CSP (`script-src 'self'`, `connect-src 'self'`).
 
 ### `Kpapy\OpenApi\Generator`
 
@@ -658,4 +660,5 @@ Name and description of the resource in the OpenAPI document. Custom operations 
 | `localeFallbacks` | `[]` | Fallback languages of translated fields |
 | `openApiTitle`, `openApiVersion`, `openApiDescription` | `API`, `1.0.0`, `''` | OpenAPI document |
 | `docsInProduction` | `false` | Documentation page in production |
+| `docsTryIt` | `null` | "Try it" on the documentation page: `null` only outside production, `true` always, `false` never |
 | `problemTypeBase` | `''` | Base URL of the error types |

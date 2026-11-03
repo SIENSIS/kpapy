@@ -21,10 +21,12 @@ Funcionalitats:
 - **Inici de sessió per a apps amb segon factor**: el mètode actiu de l'usuari (aplicació d'autenticació, codi per correu) o, per als usuaris sense 2FA, un **codi que apareix al seu perfil web**
 - **ETag**, `GET` condicional (`304`) i concurrència optimista amb `If-Match` (`412`)
 - **CORS**, **límits de peticions** per token, per IP i per a l'inici de sessió, HTTPS obligatori en producció
-- **OpenAPI 3.1** generat a partir dels recursos, i una pàgina de documentació
+- **OpenAPI 3.1** generat a partir dels recursos, i una pàgina de documentació on es pot **provar** cada endpoint: enviar peticions reals amb un token (o iniciant la sessió com una app, amb el segon factor), veure'n l'estat, les capçaleres i el cos, i copiar-les com a `curl`
 - Comandes `spark`: generar un recurs a partir d'una taula, el document OpenAPI, llistar les rutes de l'API, crear tokens, publicar la configuració, instal·lar la demo
 
 ![Consola de la demo de kpapy](screenshots/02-console-list-books.png)
+
+![Prova-ho a la pàgina de documentació](screenshots/12-docs-try-it-create.png)
 
 Més captures a [screenshots/](screenshots/README.md).
 
@@ -171,7 +173,7 @@ Totes les opcions són a [docs/functions_CA.md](docs/functions_CA.md#configuraci
 
 ## Demo
 
-La llibreria inclou una petita API de biblioteca (llibres, autors, etiquetes, préstecs) amb usuaris de prova, l'inici de sessió de les apps amb els dos mètodes de segon factor, una consola web per enviar peticions i la pàgina de documentació. S'instal·la en qualsevol projecte amb Shield:
+La llibreria inclou una petita API de biblioteca (llibres, autors, etiquetes, préstecs) amb usuaris de prova, l'inici de sessió de les apps amb els dos mètodes de segon factor, una consola web per enviar peticions i la pàgina de documentació amb "Prova-ho". S'instal·la en qualsevol projecte amb Shield:
 
 ```bash
 php spark kpapy:demo install

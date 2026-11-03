@@ -7,6 +7,7 @@ use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
 use CodeIgniter\Test\FeatureTestTrait;
 use Kpapy\Auth\Context;
+use Kpapy\OpenApi\Example;
 use Kpapy\OpenApi\Generator;
 use Kpapy\Resource;
 use Kpapy\Test\ApiTestTrait;
@@ -79,6 +80,48 @@ final class OpenApiAndFilesTest extends CIUnitTestCase
         $page->assertStatus(200);
         $page->assertSee('Documents');
         $this->assertSame('3.1.0', json_decode((string) $this->get('api/v1/docs/openapi.json')->response()->getBody(), true)['openapi']);
+    }
+
+    public function testTryItOnTheDocumentationPage(): void
+    {
+        $html = html_entity_decode((string) $this->get('api/v1/docs')->response()->getBody());
+        $this->assertStringContainsString('data-kp-try', $html);
+        $this->assertStringContainsString('/api/v1/docs/try-it.js', $html);
+        $this->assertStringContainsString('name="path:id"', $html);
+        $this->assertStringContainsString('"status": "draft"', $html, 'the body is prefilled from the schema');
+
+        $script = $this->get('api/v1/docs/try-it.js');
+        $script->assertStatus(200);
+        $this->assertStringStartsWith('text/javascript', $script->response()->getHeaderLine('Content-Type'));
+
+        config('Kpapy')->docsTryIt = false;
+        $this->assertStringNotContainsString('data-kp-try', (string) $this->get('api/v1/docs')->response()->getBody());
+        try {
+            $this->get('api/v1/docs/try-it.js');
+            $this->fail('try-it.js must not be served when the option is off');
+        } catch (\CodeIgniter\Exceptions\PageNotFoundException) {
+            $this->addToAssertionCount(1);
+        } finally {
+            config('Kpapy')->docsTryIt = null;
+        }
+    }
+
+    public function testExampleValuesFromSchemas(): void
+    {
+        $schemas = ['Item' => ['type' => 'object', 'properties' => [
+            'name'  => ['type' => 'string'],
+            'kind'  => ['type' => 'string', 'enum' => ['a', 'b']],
+            'tags'  => ['type' => 'array', 'items' => ['type' => 'string', 'enum' => ['x']]],
+            'count' => ['type' => 'integer'],
+            'ok'    => ['type' => 'boolean'],
+            'mail'  => ['type' => 'string', 'format' => 'email'],
+            'file'  => ['type' => 'string', 'format' => 'binary'],
+        ]]];
+
+        $this->assertSame(
+            ['name' => '', 'kind' => 'a', 'tags' => ['x'], 'count' => 0, 'ok' => false, 'mail' => 'user@example.com'],
+            Example::fromSchema(['$ref' => '#/components/schemas/Item'], $schemas),
+        );
     }
 
     public function testUploadAndSignedDownload(): void

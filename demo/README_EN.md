@@ -71,6 +71,10 @@ In a real application the "web profile" is the profile page of the website, behi
 
 The console page has no inline JavaScript (an external ES module), like every page of the demo.
 
+## The documentation — `/kpapy-demo/api/v1/docs`
+
+The documentation page of the demo API, generated from the resources. Every endpoint has **Try it**: sign in at the top (for example as the reader: the code is in its web profile), fill in the parameters (`per_page`, `sort`, `lang`, filters…) or the prefilled JSON body and press **Send**; **Copy as curl** copies the request. See the [screenshots](../screenshots/README.md).
+
 ## API resources
 
 All under `/kpapy-demo/api/v1/`. Permissions come from one resolver, [Libraries/DemoPermissions.php](../src/Demo/Libraries/DemoPermissions.php), with `denyByDefault`.
@@ -83,7 +87,7 @@ All under `/kpapy-demo/api/v1/`. Permissions come from one resolver, [Libraries/
 | `my/loans` | `library-loans` | **Own records** (`where(user_id)`), read only, custom operation `POST my/loans/{id}/return` |
 | `public/books` | `library-public` | Public catalogue **without a token** (`kpapy:public`), only available books |
 | `auth/token`, `auth/token/verify`, `auth/token/refresh`, `me/tokens` | — | App login with 2FA, refresh, tokens of the user |
-| `docs`, `docs/openapi.json` | — | Documentation page and OpenAPI 3.1 document |
+| `docs`, `docs/openapi.json`, `docs/try-it.js` | — | Documentation page with "Try it" and OpenAPI 3.1 document |
 
 Every id is **masked** (with the demo's own key): copy them from the responses.
 

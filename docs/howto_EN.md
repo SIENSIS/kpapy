@@ -295,7 +295,19 @@ Resource::routes($routes, 'api/v2/authors', 'Api\V2\Authors::index', ['filter' =
 \Kpapy\OpenApi\DocsController::routes($routes, 'api/v1/docs', ['filter' => 'session']);   // only for signed-in staff
 ```
 
-`/api/v1/docs` is a readable page and `/api/v1/docs/openapi.json` the document for Swagger UI, Postman or code generators. Add descriptions with `->describe('Books', 'Books of the library')` and the `description` option of custom operations. Build a static file in your deployment:
+`/api/v1/docs` is a readable page and `/api/v1/docs/openapi.json` the document for Swagger UI, Postman or code generators. Each endpoint of the page has **Try it** (outside production): fill in the parameters, adjust the prefilled JSON body and send the request with a token pasted in the panel at the top or after signing in there like an app; **Copy as curl** gives the same request for a terminal. To offer it in production only to some people, protect the route and enable it:
+
+```php
+// app/Config/Kpapy.php
+public bool $docsInProduction = true;
+public ?bool $docsTryIt = true;
+```
+
+```php
+\Kpapy\OpenApi\DocsController::routes($routes, 'api/v1/docs', ['filter' => 'group:admin']);
+```
+
+Add descriptions with `->describe('Books', 'Books of the library')` and the `description` option of custom operations. Build a static file in your deployment:
 
 ```bash
 php spark kpapy:openapi --prefix api/v1 --output public/openapi.json

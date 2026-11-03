@@ -295,7 +295,19 @@ Resource::routes($routes, 'api/v2/authors', 'Api\V2\Authors::index', ['filter' =
 \Kpapy\OpenApi\DocsController::routes($routes, 'api/v1/docs', ['filter' => 'session']);   // només personal identificat
 ```
 
-`/api/v1/docs` és una pàgina llegible i `/api/v1/docs/openapi.json` el document per a Swagger UI, Postman o generadors de codi. Afegeix-hi descripcions amb `->describe('Books', 'Llibres de la biblioteca')` i l'opció `description` de les operacions pròpies. Per generar un fitxer estàtic en el desplegament:
+`/api/v1/docs` és una pàgina llegible i `/api/v1/docs/openapi.json` el document per a Swagger UI, Postman o generadors de codi. Cada endpoint de la pàgina té **Prova-ho** (fora de producció): omple els paràmetres, ajusta el cos JSON proposat i envia la petició amb un token enganxat al quadre de dalt o després d'iniciar-hi la sessió com una app; **Copy as curl** dona la mateixa petició per a un terminal. Per oferir-ho en producció només a algunes persones, protegeix la ruta i activa-ho:
+
+```php
+// app/Config/Kpapy.php
+public bool $docsInProduction = true;
+public ?bool $docsTryIt = true;
+```
+
+```php
+\Kpapy\OpenApi\DocsController::routes($routes, 'api/v1/docs', ['filter' => 'group:admin']);
+```
+
+Afegeix-hi descripcions amb `->describe('Books', 'Llibres de la biblioteca')` i l'opció `description` de les operacions pròpies. Per generar un fitxer estàtic en el desplegament:
 
 ```bash
 php spark kpapy:openapi --prefix api/v1 --output public/openapi.json

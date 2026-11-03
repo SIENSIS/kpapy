@@ -71,6 +71,10 @@ En una aplicació real, el "perfil web" és la pàgina de perfil del web, darrer
 
 La pàgina de la consola no té JavaScript en línia (un mòdul ES extern), com totes les pàgines de la demo.
 
+## La documentació — `/kpapy-demo/api/v1/docs`
+
+La pàgina de documentació de l'API de la demo, generada a partir dels recursos. Cada endpoint té **Prova-ho**: inicia la sessió a dalt (per exemple com a lector: el codi és al seu perfil web), omple els paràmetres (`per_page`, `sort`, `lang`, filtres…) o el cos JSON proposat i prem **Send**; **Copy as curl** copia la petició. Vegeu les [captures](../screenshots/README.md).
+
 ## Recursos de l'API
 
 Tots sota `/kpapy-demo/api/v1/`. Els permisos surten d'un sol resolutor, [Libraries/DemoPermissions.php](../src/Demo/Libraries/DemoPermissions.php), amb `denyByDefault`.
@@ -83,7 +87,7 @@ Tots sota `/kpapy-demo/api/v1/`. Els permisos surten d'un sol resolutor, [Librar
 | `my/loans` | `library-loans` | **Registres propis** (`where(user_id)`), només lectura, operació pròpia `POST my/loans/{id}/return` |
 | `public/books` | `library-public` | Catàleg públic **sense token** (`kpapy:public`), només llibres disponibles |
 | `auth/token`, `auth/token/verify`, `auth/token/refresh`, `me/tokens` | — | Inici de sessió de les apps amb 2FA, renovació, tokens de l'usuari |
-| `docs`, `docs/openapi.json` | — | Pàgina de documentació i document OpenAPI 3.1 |
+| `docs`, `docs/openapi.json`, `docs/try-it.js` | — | Pàgina de documentació amb "Prova-ho" i document OpenAPI 3.1 |
 
 Tots els id van **emmascarats** (amb la clau pròpia de la demo): copia'ls de les respostes.
 

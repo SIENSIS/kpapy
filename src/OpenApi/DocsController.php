@@ -12,9 +12,10 @@ use Kpapy\Config\Kpapy as KpapyConfig;
 
 /**
  * Documentació de l'API: el document OpenAPI (JSON) i una pàgina HTML per llegir-lo.
- * Fora de producció, o en producció si Config\Kpapy::$docsInProduction.
+ * Fora de producció, o en producció si Config\Kpapy::$docsInProduction. Amb l'opció "Prova-ho"
+ * (Config\Kpapy::$docsTryIt) cada endpoint té un formulari per enviar peticions reals.
  *
- *     DocsController::routes($routes, 'api/v1/docs');   // /api/v1/docs i /api/v1/docs/openapi.json
+ *     DocsController::routes($routes, 'api/v1/docs');   // /api/v1/docs, /openapi.json i /try-it.js
  */
 class DocsController extends Controller
 {
@@ -27,6 +28,7 @@ class DocsController extends Controller
 
         $routes->get($path, '\\' . static::class . '::page', $options);
         $routes->get($path . '/openapi.json', '\\' . static::class . '::spec', $options);
+        $routes->get($path . '/try-it.js', '\\' . static::class . '::script', $options);
     }
 
     public function spec(): ResponseInterface
@@ -42,7 +44,39 @@ class DocsController extends Controller
 
         $spec = (new Generator($this->kpapy()))->generate($this->prefix());
 
-        return view('Kpapy\Views\docs', ['spec' => $spec, 'jsonUrl' => current_url() . '/openapi.json'], ['saveData' => false]);
+        $base = rtrim(current_url(), '/');
+
+        return view('Kpapy\Views\docs', [
+            'spec'      => $spec,
+            'jsonUrl'   => $base . '/openapi.json',
+            'tryIt'     => $this->tryIt(),
+            'scriptUrl' => $base . '/try-it.js',
+        ], ['saveData' => false]);
+    }
+
+    /**
+     * Script de l'opció "Prova-ho" (fitxer extern: la pàgina no té codi en línia).
+     */
+    public function script(): ResponseInterface
+    {
+        $this->guard();
+
+        if (! $this->tryIt()) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+
+        return $this->response
+            ->setContentType('text/javascript')
+            ->setHeader('Cache-Control', 'no-cache')
+            ->setBody((string) file_get_contents(dirname(__DIR__) . '/Views/try-it.js'));
+    }
+
+    /**
+     * L'opció "Prova-ho" està activa (Config\Kpapy::$docsTryIt; null: fora de producció).
+     */
+    protected function tryIt(): bool
+    {
+        return $this->kpapy()->docsTryIt ?? ENVIRONMENT !== 'production';
     }
 
     protected function guard(): void

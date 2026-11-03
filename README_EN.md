@@ -21,10 +21,12 @@ Features:
 - **Login for apps with two-factor authentication**: the user's active method (authenticator app, email code) or, for users without 2FA, a **code shown in their web profile**
 - **ETags**, conditional `GET` (`304`) and optimistic concurrency with `If-Match` (`412`)
 - **CORS**, **rate limits** per token, per IP and for the login, HTTPS required in production
-- **OpenAPI 3.1** generated from the resources, and a documentation page
+- **OpenAPI 3.1** generated from the resources, and a documentation page where every endpoint can be **tried**: send real requests with a token (or signing in like an app, with the second factor), see the status, headers and body, copy them as `curl`
 - `spark` commands: generate a resource from a table, the OpenAPI document, list the API routes, create tokens, publish the configuration, install the demo
 
 ![kpapy demo console](screenshots/02-console-list-books.png)
+
+![Try it on the documentation page](screenshots/12-docs-try-it-create.png)
 
 More in [screenshots/](screenshots/README.md).
 
@@ -171,7 +173,7 @@ Every option is in [docs/functions_EN.md](docs/functions_EN.md#configuration).
 
 ## Demo
 
-The library includes a small library API (books, authors, tags, loans) with demo users, the app login with both two-factor methods, a web console to send requests and the documentation page. It is installed in any project with Shield:
+The library includes a small library API (books, authors, tags, loans) with demo users, the app login with both two-factor methods, a web console to send requests and the documentation page with "Try it". It is installed in any project with Shield:
 
 ```bash
 php spark kpapy:demo install

@@ -309,7 +309,7 @@ Simple envelope (JSON, UTF-8, `application/json`):
   sorting, operations, custom operations, error responses and security (bearer token, scopes).
 * `php spark kpapy:openapi [--output=public/api/openapi.json] [--format=json|yaml]` builds an
   **OpenAPI 3.1** document from the registered routes; a route can serve it dynamically.
-* An optional documentation page (Swagger UI or Redoc, vendored locally, CSP-compatible,
+* An optional documentation page (built in: server-side HTML with a "Try it" form per endpoint, see `docsTryIt`; originally planned as Swagger UI or Redoc, vendored locally, CSP-compatible,
   disabled in production unless enabled) to try the API with a token.
 * Descriptions and examples can be added per resource (`->describe()`, `->example()`).
 

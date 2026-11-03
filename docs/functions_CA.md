@@ -616,7 +616,9 @@ Nom i descripció del recurs al document OpenAPI. Les operacions pròpies i les 
 
 ### `Kpapy\OpenApi\DocsController::routes(RouteCollection $routes, string $path = 'api/v1/docs', array $options = []): void` (estàtic)
 
-`GET <camí>`: una pàgina de documentació (HTML, sense JavaScript, compatible amb la CSP, clara i fosca); `GET <camí>/openapi.json`: el document OpenAPI 3.1 (per a Swagger UI, Postman, generadors de codi…). No està disponible en producció si no s'activa `docsInProduction`. Per limitar-la a uns camins o fer servir una altra configuració, estén-la i redefineix `prefix()` i `kpapy()`.
+`GET <camí>`: una pàgina de documentació (HTML, compatible amb la CSP, clara i fosca); `GET <camí>/openapi.json`: el document OpenAPI 3.1 (per a Swagger UI, Postman, generadors de codi…); `GET <camí>/try-it.js`: l'script de "Prova-ho". No està disponible en producció si no s'activa `docsInProduction`. Per limitar-la a uns camins o fer servir una altra configuració, estén-la i redefineix `prefix()` i `kpapy()` (i `tryIt()` per decidir "Prova-ho" amb una regla pròpia, p. ex. només per als administradors).
+
+**Prova-ho** (`docsTryIt`; per defecte només fora de producció): cada endpoint té un formulari amb els paràmetres de camí, de consulta i de capçalera (`If-Match` per a `PATCH`, `PUT` i `DELETE`), un camp lliure per a altres paràmetres de consulta (`purge=1`, `filter[year][gte]=2000`…) i, per a `POST`, `PATCH` i `PUT`, un cos JSON omplert a partir de l'esquema (`Kpapy\OpenApi\Example`; des d'aquí no s'envien fitxers). **Send** mostra l'estat, les capçaleres útils (`ETag`, `Location`, `Retry-After`…) i el cos formatat; **Copy as curl** copia la mateixa petició. El quadre de dalt admet un token d'accés o, si l'API té les rutes d'inici de sessió (`AuthRoutes::register()`), inicia la sessió com una app en dos passos (contrasenya i després el codi del segon factor de l'usuari o del perfil web). El token només es guarda a la memòria de la pestanya. Les peticions són reals: mateixos permisos, abasts del token, límits i dades que qualsevol altre client. L'script és un fitxer extern (`try-it.js`): la pàgina no té codi en línia i funciona amb una CSP estricta (`script-src 'self'`, `connect-src 'self'`).
 
 ### `Kpapy\OpenApi\Generator`
 
@@ -658,4 +660,5 @@ Nom i descripció del recurs al document OpenAPI. Les operacions pròpies i les 
 | `localeFallbacks` | `[]` | Idiomes de reserva dels camps traduïts |
 | `openApiTitle`, `openApiVersion`, `openApiDescription` | `API`, `1.0.0`, `''` | Document OpenAPI |
 | `docsInProduction` | `false` | Pàgina de documentació en producció |
+| `docsTryIt` | `null` | "Prova-ho" a la pàgina de documentació: `null` només fora de producció, `true` sempre, `false` mai |
 | `problemTypeBase` | `''` | URL base dels tipus d'error |

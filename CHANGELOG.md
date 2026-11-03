@@ -38,6 +38,10 @@ Documentation is in English and Catalan: [README_EN.md](README_EN.md) · [README
   points; `kpapy.auth.*` events.
 - **OpenAPI 3.1** generated from the resources (`Generator`, `DocsController` with a CSP-friendly
   documentation page and the JSON document).
+- **Try it** on the documentation page (`docsTryIt`, by default only outside production): a form per
+  endpoint with its parameters and a JSON body prefilled from the schema (`OpenApi\Example`), real
+  requests with a pasted token or after signing in like an app with the second factor, status, headers
+  and body of the response, and **Copy as curl**; external script, compatible with a strict CSP.
 - **Commands**: `kpapy:make` (also into modules), `kpapy:openapi`, `kpapy:routes`, `kpapy:token`,
   `kpapy:publish`, `kpapy:demo`.
 - **Demo**: a library API with Shield demo users (TOTP and web-code sign-in), central permissions, own
