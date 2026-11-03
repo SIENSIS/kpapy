@@ -198,7 +198,7 @@ Encara que l'usuari sigui administrador, aquest token rep `403` a qualsevol escr
 
 ### Un sol resolutor de permisos per a kpcrudy i kpapy
 
-> Només per als projectes que també fan servir kpcrudy. Sense kpcrudy, implementa només `Kpapy\PermissionResolver` (vegeu les receptes anteriors).
+> Només per als projectes que també fan servir kpcrudy. Sense kpcrudy, implementa només `Kpapy\PermissionResolver` (vegeu [functions_CA.md](functions_CA.md#interfície-kpapypermissionresolver)).
 
 ```php
 namespace App\Libraries;
