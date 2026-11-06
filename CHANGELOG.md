@@ -5,6 +5,8 @@ Documentation is in English and Catalan: [README_EN.md](README_EN.md) · [README
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-06
+
 ### Fixed
 
 - `POST auth/token` with an unknown email answered 500 about 6 % of the time instead of 401: the
@@ -66,5 +68,6 @@ with `composer update siensis/kpapy`. The Composer package does not include the 
 (`demo/`) nor the screenshots (`.gitattributes`); the documentation (`docs/`) and the integrated
 demo (`src/Demo`) are included.
 
-[Unreleased]: https://github.com/SIENSIS/kpapy/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/SIENSIS/kpapy/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/SIENSIS/kpapy/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/SIENSIS/kpapy/releases/tag/v1.0.0
