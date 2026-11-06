@@ -169,9 +169,10 @@ class LoginController extends Controller
         $user      = auth()->getProvider()->findByCredentials(['email' => $email]);
         $passwords = service('passwords');
 
-        // Mateix temps de resposta tant si l'usuari existeix com si no
+        // Mateix temps de resposta tant si l'usuari existeix com si no. La contrasenya fictícia
+        // és hexadecimal: bcrypt rebutja el byte nul (ValueError) que random_bytes() pot generar.
         static $dummy = null;
-        $hash = $user?->password_hash ?? ($dummy ??= password_hash(random_bytes(16), PASSWORD_DEFAULT));
+        $hash = $user?->password_hash ?? ($dummy ??= password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT));
 
         if (! $passwords->verify($password, (string) $hash) || $user === null) {
             Events::fire('kpapy.auth.failed', ['email' => $email, 'method' => 'password']);

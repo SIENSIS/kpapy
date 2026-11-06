@@ -5,6 +5,13 @@ Documentation is in English and Catalan: [README_EN.md](README_EN.md) · [README
 
 ## [Unreleased]
 
+### Fixed
+
+- `POST auth/token` with an unknown email answered 500 about 6 % of the time instead of 401: the
+  dummy password used to keep the response time constant came from `random_bytes(16)`, and bcrypt
+  throws a `ValueError` when it contains a null byte. It is now hex-encoded. Besides the error,
+  the 500 hinted that the account did not exist and skipped the `kpapy.auth.failed` event.
+
 ## [1.0.0] - 2026-11-03
 
 ### Added
