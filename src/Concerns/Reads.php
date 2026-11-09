@@ -138,6 +138,28 @@ trait Reads
             $builder->where($column, $value);
         }
 
+        // Condicions pròpies (where(Closure)): entre parèntesis, perquè un OR no n'escapi.
+        // Una closure que no afegeix res no deixa un grup buit "()" (SQL no vàlid).
+        $conditions = static fn (BaseBuilder $builder): int => (fn (): int => count($this->QBWhere))->call($builder);
+
+        foreach ($this->whereCallbacks as $callback) {
+            $before = $conditions($builder);
+            $builder->groupStart();
+            $callback($builder, $this);
+
+            if ($conditions($builder) === $before + 1) {
+                (function (): void {
+                    array_pop($this->QBWhere);
+                    $this->QBWhereGroupStarted = false;
+                    $this->QBWhereGroupCount--;
+                })->call($builder);
+
+                continue;
+            }
+
+            $builder->groupEnd();
+        }
+
         if ($this->softDeletes) {
             match ($trashed) {
                 'with'  => null,

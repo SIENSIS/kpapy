@@ -81,7 +81,7 @@ Works with a CodeIgniter model: its table, primary key, `allowedFields` (fields 
 
 Database group or connection, and the primary key when it cannot be detected.
 
-### `where(array|string $field, mixed $value = null): static`
+### `where(array|Closure|string $field, mixed $value = null): static`
 
 Limits **every** operation: list, details, writes, deletion, custom operations and bulk actions. A record outside it is `404`. Equality conditions are also **enforced on write**: the field cannot be sent by the client and is always saved with that value.
 
@@ -89,6 +89,15 @@ Limits **every** operation: list, details, writes, deletion, custom operations a
 $api->where('user_id', auth()->id());          // own records
 $api->where(['status' => 'published']);
 $api->where('year >=', 2000);                  // only filters (not enforced on write)
+```
+
+*Since 1.2.* A **closure** `fn (BaseBuilder $builder, Resource $api)` adds conditions of your own (`OR`, subqueries, joins on other tables through `whereIn()` with a subquery…) to every query of the resource, wrapped in parentheses so an `OR` cannot widen the scope. Values go through the Query Builder (bound and escaped); nothing is enforced on write. A closure that adds no condition is ignored.
+
+```php
+// Visible to the user: public, or shared with one of their groups
+$api->where(static fn (BaseBuilder $builder) => $builder
+    ->where('posts.visibility', 'public')
+    ->orWhereIn('posts.id', static fn (BaseBuilder $sub) => $sub->select('post_id')->from('post_groups')->whereIn('group_id', $groupIds)));
 ```
 
 ### `softDeletes(bool $enabled = true, string $field = 'deleted_at'): static`

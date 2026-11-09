@@ -81,7 +81,7 @@ Treballa amb un model de CodeIgniter: la seva taula, clau primària, `allowedFie
 
 Grup o connexió de base de dades, i la clau primària quan no es pot detectar.
 
-### `where(array|string $field, mixed $value = null): static`
+### `where(array|Closure|string $field, mixed $value = null): static`
 
 Limita **totes** les operacions: llistat, detall, escriptures, esborrat, operacions pròpies i accions massives. Un registre de fora és `404`. Les condicions d'igualtat també **s'imposen en escriure**: el client no pot enviar el camp i sempre es desa amb aquest valor.
 
@@ -89,6 +89,15 @@ Limita **totes** les operacions: llistat, detall, escriptures, esborrat, operaci
 $api->where('user_id', auth()->id());          // registres propis
 $api->where(['status' => 'published']);
 $api->where('year >=', 2000);                  // només filtra (no s'imposa en escriure)
+```
+
+*Des de 1.2.* Una **closure** `fn (BaseBuilder $builder, Resource $api)` afegeix condicions pròpies (`OR`, subconsultes, altres taules amb `whereIn()` i una subconsulta…) a totes les consultes del recurs, entre parèntesis perquè un `OR` no pugui ampliar l'abast. Els valors passen pel Query Builder (vinculats i escapats); no s'imposa res en escriure. Una closure que no afegeix cap condició s'ignora.
+
+```php
+// Visibles per a l'usuari: públiques, o compartides amb un dels seus grups
+$api->where(static fn (BaseBuilder $builder) => $builder
+    ->where('posts.visibility', 'public')
+    ->orWhereIn('posts.id', static fn (BaseBuilder $sub) => $sub->select('post_id')->from('post_groups')->whereIn('group_id', $groupIds)));
 ```
 
 ### `softDeletes(bool $enabled = true, string $field = 'deleted_at'): static`

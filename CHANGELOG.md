@@ -5,6 +5,12 @@ Documentation is in English and Catalan: [README_EN.md](README_EN.md) · [README
 
 ## [Unreleased]
 
+### Added
+
+- **`where(Closure)`**: `fn (BaseBuilder $builder, Resource $api)` adds conditions of your own (`OR`, subqueries) to every
+  query of the resource (list, details, counts, writes, deletion, custom operations, bulk actions), wrapped in parentheses so
+  an `OR` cannot widen the scope; values are bound by the Query Builder. Not enforced on write.
+
 ## [1.1.0] - 2026-11-09
 
 ### Security

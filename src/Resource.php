@@ -83,6 +83,13 @@ class Resource
     protected array $wheres = [];
 
     /**
+     * Condicions pròpies de where(Closure): fn (BaseBuilder $builder, Resource $api): mixed
+     *
+     * @var list<Closure>
+     */
+    protected array $whereCallbacks = [];
+
+    /**
      * @var array<string, bool|Closure>
      */
     protected array $permissions = [];
@@ -176,9 +183,18 @@ class Resource
     /**
      * Limita tots els registres del recurs (lectura, escriptura, esborrat, accions massives).
      * Les condicions d'igualtat simples s'imposen en escriure: el client no les pot canviar.
+     *
+     * Una closure fn (BaseBuilder $builder, Resource $api) afegeix condicions pròpies a la
+     * consulta (OR, subconsultes...), dins d'un grup entre parèntesis; no s'imposa en escriure.
      */
-    public function where(array|string $field, mixed $value = null): static
+    public function where(array|Closure|string $field, mixed $value = null): static
     {
+        if ($field instanceof Closure) {
+            $this->whereCallbacks[] = $field;
+
+            return $this;
+        }
+
         if (is_array($field)) {
             foreach ($field as $key => $item) {
                 $this->wheres[] = [(string) $key, $item];
