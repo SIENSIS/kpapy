@@ -91,6 +91,7 @@ return [
         'cannotCreateDir'   => 'Kpapy: no es pot crear el directori "{0}".',
         'invalidKeyFile'    => 'Kpapy: el fitxer de clau "{0}" no és vàlid.',
         'invalidUploadHandler' => 'Kpapy: el gestor de fitxers del camp "{0}" no implementa Kpapy\\Storage\\UploadHandler.',
+        'invalidController' => 'Kpapy: la classe "{0}" ha d\'estendre {1}.',
         'invalidProvider'   => 'Kpapy: el proveïdor de dos factors "{0}" no és vàlid.',
         'shieldRequired'    => 'Kpapy: aquesta funcionalitat necessita codeigniter4/shield.',
     ],

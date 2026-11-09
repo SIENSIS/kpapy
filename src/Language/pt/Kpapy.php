@@ -91,6 +91,7 @@ return [
         'cannotCreateDir'   => 'Kpapy: não é possível criar o diretório "{0}".',
         'invalidKeyFile'    => 'Kpapy: o ficheiro de chave "{0}" não é válido.',
         'invalidUploadHandler' => 'Kpapy: o gestor de ficheiros do campo "{0}" não implementa Kpapy\\Storage\\UploadHandler.',
+        'invalidController' => 'Kpapy: a classe "{0}" tem de estender {1}.',
         'invalidProvider'   => 'Kpapy: o fornecedor de dois fatores "{0}" não é válido.',
         'shieldRequired'    => 'Kpapy: esta funcionalidade requer codeigniter4/shield.',
     ],

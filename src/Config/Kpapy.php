@@ -139,6 +139,20 @@ class Kpapy extends BaseConfig
     public array $defaultScopes = ['*'];
 
     /**
+     * Controladors de les rutes de AuthRoutes::register() (si no se'n passen d'altres en cridar-lo):
+     * l'inici de sessió de les apps (subclasse de Kpapy\Auth\LoginController) i me/tokens
+     * (subclasse de Kpapy\Auth\TokenController).
+     *
+     * @var class-string<\Kpapy\Auth\LoginController>
+     */
+    public string $loginController = \Kpapy\Auth\LoginController::class;
+
+    /**
+     * @var class-string<\Kpapy\Auth\TokenController>
+     */
+    public string $tokenController = \Kpapy\Auth\TokenController::class;
+
+    /**
      * Mètodes de segon factor, per ordre de preferència. El primer que l'usuari tingui
      * actiu és el que es fa servir; 'web' (codi al perfil web) és per als usuaris sense
      * cap altre mètode. Treu-ne 'web' per refusar l'inici de sessió dels usuaris sense 2FA.

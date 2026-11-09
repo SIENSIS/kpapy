@@ -129,12 +129,7 @@ final class Demo
         Resource::routes($routes, self::API . '/public/books', '\Kpapy\Demo\Controllers\Api::publicBooks', ['filter' => 'kpapy:public']);
 
         // Login for apps (with the demo's own two-factor settings) and tokens
-        $routes->post(self::API . '/auth/token', '\Kpapy\Demo\Controllers\DemoLogin::token', ['filter' => 'kpapy:login']);
-        $routes->post(self::API . '/auth/token/verify', '\Kpapy\Demo\Controllers\DemoLogin::verify', ['filter' => 'kpapy:login']);
-        $routes->delete(self::API . '/auth/token', '\Kpapy\Demo\Controllers\DemoLogin::logout', $api);
-        $routes->post(self::API . '/auth/token/refresh', '\Kpapy\Demo\Controllers\DemoLogin::refresh', $api);
-        $routes->get(self::API . '/me/tokens', '\Kpapy\Auth\TokenController::index', $api);
-        $routes->delete(self::API . '/me/tokens/(:num)', '\Kpapy\Auth\TokenController::delete/$1', $api);
+        AuthRoutes::register($routes, self::API, [], Controllers\DemoLogin::class);
 
         // Documentation
         \Kpapy\Demo\Controllers\DemoDocs::routes($routes, self::API . '/docs');

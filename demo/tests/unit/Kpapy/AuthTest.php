@@ -170,4 +170,39 @@ final class AuthTest extends CIUnitTestCase
         $response = $this->withHeaders(['Origin' => 'https://evil.example.com'])->get('api/v1/public-notes');
         $this->assertSame('', $response->response()->getHeaderLine('Access-Control-Allow-Origin'));
     }
+
+    public function testCustomLoginAndTokenControllers(): void
+    {
+        $routes = service('routes');
+        $routes->resetRoutes();
+        AuthRoutes::register($routes, 'api/v2', [], CustomLoginController::class, CustomTokenController::class);
+
+        $this->assertSame('\\' . CustomLoginController::class . '::token', $routes->getRoutes('POST')['api/v2/auth/token']);
+        $this->assertSame('\\' . CustomLoginController::class . '::refresh', $routes->getRoutes('POST')['api/v2/auth/token/refresh']);
+        $this->assertSame('\\' . CustomTokenController::class . '::index', $routes->getRoutes('GET')['api/v2/me/tokens']);
+
+        // From the configuration
+        $config                  = config('Kpapy');
+        $config->loginController = CustomLoginController::class;
+
+        try {
+            $routes->resetRoutes();
+            AuthRoutes::register($routes, 'api/v3');
+            $this->assertSame('\\' . CustomLoginController::class . '::verify', $routes->getRoutes('POST')['api/v3/auth/token/verify']);
+            $this->assertSame('\\Kpapy\\Auth\\TokenController::index', $routes->getRoutes('GET')['api/v3/me/tokens']);
+        } finally {
+            $config->loginController = \Kpapy\Auth\LoginController::class;
+        }
+
+        $this->expectException(\InvalidArgumentException::class);
+        AuthRoutes::register($routes, 'api/v4', [], \stdClass::class);
+    }
+}
+
+final class CustomLoginController extends \Kpapy\Auth\LoginController
+{
+}
+
+final class CustomTokenController extends \Kpapy\Auth\TokenController
+{
 }
