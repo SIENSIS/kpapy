@@ -5,6 +5,8 @@ Documentation is in English and Catalan: [README_EN.md](README_EN.md) · [README
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-09
+
 ### Security
 
 - **`GET me/tokens` and `DELETE me/tokens/{id}` now require the `tokens.manage` scope** (behaviour
@@ -106,6 +108,7 @@ with `composer update siensis/kpapy`. The Composer package does not include the 
 (`demo/`) nor the screenshots (`.gitattributes`); the documentation (`docs/`) and the integrated
 demo (`src/Demo`) are included.
 
-[Unreleased]: https://github.com/SIENSIS/kpapy/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/SIENSIS/kpapy/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/SIENSIS/kpapy/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/SIENSIS/kpapy/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/SIENSIS/kpapy/releases/tag/v1.0.0
