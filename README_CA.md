@@ -11,16 +11,16 @@ Funcionalitats:
 
 - **Llistat** amb paginació (per pàgines o per **cursor**), **filtres** amb operadors, **cerca**, **ordenació**, **selecció de camps** i **inclusió** de registres relacionats
 - **Detall**, **alta** (`POST`), **edició parcial i completa** (`PATCH`, `PUT`), **esborrat**, **paperera**, **restauració** i **esborrat definitiu** (soft deletes de CodeIgniter)
-- **Relacions 1-N i N-N**, **camps traduïts** en una taula filla (`?lang=` o `Accept-Language`), camps **multiselecció**, **pujada de fitxers** amb URL signades i temporals per als fitxers privats
+- **Relacions 1-N i N-N**, **camps traduïts** en una taula filla (`?lang=` o `Accept-Language`), camps **multiselecció**, **pujada de fitxers** amb URL signades i temporals per als fitxers privats i **emmagatzematge connectable** (`UploadHandler`: desa'ls amb el servei d'emmagatzematge de l'aplicació)
 - **Operacions pròpies** (`POST /books/{id}/lend`) i **accions massives** (`POST /books/bulk`), amb hooks abans i després de cada escriptura
 - Validació amb regles de CodeIgniter (també deduïdes de la taula), errors en format **RFC 9457** `application/problem+json`, traduïts a sis idiomes
 - **Permisos centralitzats** (`PermissionResolver`), `setPermission()` per recurs i el catàleg de permisos
 - **Identificadors emmascarats** a totes les URL i respostes, amb un emmascarador substituïble (`IdMasker`)
-- **Autenticació amb tokens d'accés de CodeIgniter Shield**, **abasts** (scopes) del token combinats amb els permisos de l'usuari, tokens HMAC per a integracions entre servidors
-- **Inici de sessió per a apps amb segon factor**: el mètode actiu de l'usuari (aplicació d'autenticació, codi per correu) o, per als usuaris sense 2FA, un **codi que apareix al seu perfil web**
+- **Autenticació amb tokens d'accés de CodeIgniter Shield**, **abasts** (scopes) del token combinats amb els permisos de l'usuari (`tokens.manage` per gestionar tokens des de l'API), tokens HMAC per a integracions entre servidors, **marques** dels tokens (`kind`) i la **darrera adreça IP** de cada token
+- **Inici de sessió per a apps amb segon factor**: el mètode actiu de l'usuari (aplicació d'autenticació, codi per correu) o, per als usuaris sense 2FA, un **codi que apareix al seu perfil web**; un controlador d'inici de sessió propi amb les mateixes rutes
 - **ETag**, `GET` condicional (`304`) i concurrència optimista amb `If-Match` (`412`)
 - **CORS**, **límits de peticions** per token, per IP i per a l'inici de sessió, HTTPS obligatori en producció
-- **OpenAPI 3.1** generat a partir dels recursos, i una pàgina de documentació on es pot **provar** cada endpoint: enviar peticions reals amb un token (o iniciant la sessió com una app, amb el segon factor), veure'n l'estat, les capçaleres i el cos, i copiar-les com a `curl`
+- **OpenAPI 3.1** generat a partir dels recursos i dels endpoints propis (l'opció de ruta `openapi`, `Generator::addPath()`), i una pàgina de documentació on es pot **provar** cada endpoint: enviar peticions reals amb un token (o iniciant la sessió com una app, amb el segon factor), veure'n l'estat, les capçaleres i el cos, i copiar-les com a `curl`
 - Comandes `spark`: generar un recurs a partir d'una taula, el document OpenAPI, llistar les rutes de l'API, crear tokens, publicar la configuració, instal·lar la demo
 
 ![Consola de la demo de kpapy](screenshots/02-console-list-books.png)

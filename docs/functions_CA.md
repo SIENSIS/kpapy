@@ -21,12 +21,12 @@ use Kpapy\Resource;
 - [Hooks](#hooks): `beforeInsert`, `afterInsert`, `beforeUpdate`, `afterUpdate`, `beforeDelete`, `afterDelete`, `afterRestore`, `afterWrite`
 - [Permisos](#permisos): `setPermission`, `unset*`, `readOnly`, `setResource`, `setPermissionResolver`, `isAllowed`, `permissionCatalogue`, `impliedPermissions`, `PermissionResolver`, abasts, registres propis
 - [Identificadors emmascarats](#identificadors-emmascarats): `maskIds`, `encodeId`, `decodeId`
-- [Fitxers](#fitxers): camps de pujada, URL signades
+- [Fitxers](#fitxers): camps de pujada, URL signades, `UploadHandler` (emmagatzematge propi)
 - [Accés des dels callbacks](#accés-des-dels-callbacks): `getTable`, `getPrimaryKey`, `getConfig`, `getRequest`, `user`, `url`, `masksIds`
 - [Errors](#errors): `ApiException`
 - [El filtre `kpapy`](#el-filtre-kpapy)
-- [Autenticació](#autenticació): `Authenticator`, `Context`, `TokenService`, `AuthRoutes`, inici de sessió de les apps, proveïdors de segon factor, esdeveniments
-- [OpenAPI i documentació](#openapi-i-documentació): `describe`, `DocsController`, `Generator`
+- [Autenticació](#autenticació): `Authenticator`, `Context`, `TokenService`, `AuthRoutes`, l'abast `tokens.manage`, inici de sessió de les apps, proveïdors de segon factor, esdeveniments
+- [OpenAPI i documentació](#openapi-i-documentació): `describe`, `DocsController`, `Generator`, `Generator::addPath`, l'opció de ruta `openapi`
 - [Configuració](#configuració): `Config\Kpapy`
 
 ---
@@ -453,10 +453,50 @@ El codi d'un id i a l'inrevés (el context per defecte és la taula).
 
 ## Fitxers
 
-`fieldType($camp, 'upload'|'image', $opcions)` amb `path` (directori; per defecte `Config\Kpapy::$uploadPath/<taula>`), `url` (URL pública base; sense, els fitxers són **privats**), `allowed` (extensions), `maxSize` (KB), `subdir` (text amb `{camp}` o `fn (array $data): string`), `deleteFiles` (per defecte `true`).
+`fieldType($camp, 'upload'|'image', $opcions)` amb `path` (directori; per defecte `Config\Kpapy::$uploadPath/<taula>`), `url` (URL pública base; sense, els fitxers són **privats**), `allowed` (extensions), `maxSize` (KB), `subdir` (text amb `{camp}` o `fn (array $data): string`), `deleteFiles` (per defecte `true`), `handler` (nom de classe o objecte que implementi `Kpapy\Storage\UploadHandler`; per defecte `Config\Kpapy::$uploadHandler`). `path`, `url` i `subdir` són opcions del gestor per defecte; un gestor propi rep totes les opcions del camp a `$context['options']`, i per tant en pot definir de pròpies (p. ex. `'disk' => 'private'`).
 
 - **Pujada**: al cos `multipart/form-data` de `POST`/`PATCH`, o `POST /r/{id}/files/{camp}` (camp `<camp>` o `file`). Es comproven l'extensió (la declarada i la real), el tipus MIME (imatges) i la mida; el fitxer rep un nom aleatori. Un fitxer substituït s'esborra.
 - **Sortida**: la URL pública, o per als fitxers privats una **URL signada** a `GET /r/{id}/files/{camp}?expires=…&signature=…`, vàlida `fileUrlLifetime` segons (la mateixa URL durant un minut, perquè els clients la puguin desar en memòria cau). El registre ha de continuar sent visible.
+
+### Gestors de fitxers: `Kpapy\Storage\UploadHandler`
+
+On i com es desen els fitxers ho decideix un **gestor de fitxers**. El per defecte, `Kpapy\Storage\LocalUploadHandler`, fa exactament el que feia kpapy 1.0 (un directori per camp, noms aleatoris, les opcions `path`, `subdir` i `url`). Per desar els fitxers en un altre lloc (el servei d'emmagatzematge de l'aplicació, S3, una base de dades…), implementa la interfície i configura-la per a tots els recursos a `Config\Kpapy::$uploadHandler` o per a un camp amb l'opció `handler`:
+
+```php
+namespace Kpapy\Storage;
+
+interface UploadHandler
+{
+    // Desa el fitxer (ja validat) i retorna el valor que es guarda a la columna del camp
+    public function store(\CodeIgniter\HTTP\Files\UploadedFile $file, string $field, array $context): string;
+
+    // Esborra un fitxer desat (fitxer substituït, registre esborrat, error en desar). No ha de fallar si ja no existeix
+    public function delete(string $stored, string $field, array $context): void;
+
+    // URL pública del fitxer, o null si no en té (fitxer privat)
+    public function url(string $stored, string $field, array $context): ?string;
+}
+```
+
+`$context` conté:
+
+| Clau | Tipus | Valor |
+|---|---|---|
+| `resource` | `string` | Nom del recurs (`setResource()`) |
+| `table` | `string` | Taula del recurs |
+| `id` | `string\|null` | Clau primària del registre (real, no emmascarada); `null` a `store()` en una alta (el registre encara no existeix) |
+| `record` | `array` | `store()`: els valors antics amb els nous; `delete()` / `url()`: la fila desada |
+| `options` | `array` | Les opcions del camp a `fieldType()` |
+| `type` | `string` | `upload` o `image` |
+| `config` | `Kpapy\Config\Kpapy` | Configuració del recurs |
+| `api` | `Kpapy\Resource` | El recurs (`getResource()`, `user()`, `url()`…) |
+
+Dues interfícies opcionals hi afegeixen la resta:
+
+- **`Kpapy\Storage\UploadReader`** — `read(string $stored, string $field, array $context): ?string` retorna el contingut del fitxer (`null` = no existeix). Si `url()` retorna `null` i el gestor el pot llegir, kpapy dona una URL signada i temporal i serveix el fitxer ell mateix a `GET /r/{id}/files/{camp}` (tipus MIME detectat pel contingut, `X-Content-Type-Options: nosniff`). Si `url()` retorna `null` i el gestor no el pot llegir, el camp surt com a `null`.
+- **`Kpapy\Storage\UploadValidator`** — `validate(UploadedFile $file, string $field, array $context): ?string` substitueix les comprovacions de kpapy (extensió, extensió real, tipus MIME de les imatges, `maxSize`): retorna un missatge d'error per a l'usuari, o `null` si el fitxer és vàlid. Sense aquesta interfície, kpapy valida exactament com abans, també amb un gestor propi.
+
+`LocalUploadHandler` implementa `UploadHandler` i `UploadReader`, i té un mètode públic `directory(array $context): string`. Estén-lo per canviar-ne només una part. La mateixa interfície (nom i mètodes) existeix a kpcrudy: una sola classe serveix per a les dues biblioteques.
 
 ---
 
@@ -518,12 +558,17 @@ Tokens d'accés de Shield per al perfil web de l'aplicació i per a l'inici de s
 
 | Mètode | Descripció |
 |---|---|
-| `create(object $user, string $name, array $scopes = [], ?int $lifetime = null): array` | `['token', 'id', 'name', 'scopes', 'expires_at']`. El token en clar només es pot veure ara. Sense abasts → `defaultScopes`; `$lifetime` en segons (`null` = `tokenLifetime`, `0` = sense caducitat) |
-| `list(object $user): array` | `id`, `name`, `scopes`, `last_used_at`, `expires_at`, `created_at`, `current` |
-| `revoke(object $user, int $id): bool` | |
+| `create(object $user, string $name, array $scopes = [], ?int $lifetime = null, array $options = []): array` | `['token', 'id', 'name', 'scopes', 'expires_at', 'kind']`. El token en clar només es pot veure ara. Sense abasts → `defaultScopes`; `$lifetime` en segons (`null` = `tokenLifetime`, `0` = sense caducitat). `$options`: `kind` (text de fins a 255 caràcters, per defecte cap) marca el token, p. ex. `personal` o `app` |
+| `list(object $user, ?string $kind = null): array` | `id`, `name`, `scopes`, `last_used_at`, `expires_at`, `created_at`, `current`, `kind`, `last_ip`. Amb `$kind`, només els tokens d'aquesta marca |
+| `revoke(object $user, int $id): bool` | També n'oblida la darrera adreça IP |
+| `TokenService::kindOf(object $token): ?string` (estàtic) | La marca d'un token d'accés de Shield (p. ex. `Context::token()`), o `null` |
 | `TokenService::cleanScopes(array $scopes): array` (estàtic) | Només els abasts vàlids |
 
 Els tokens personals només es creen des del perfil web (mai des de l'API), de manera que un token filtrat no en pot crear d'altres.
+
+**Marca del token (`kind`).** Es desa a la **columna `secret2` de la taula `auth_identities` de Shield**, que Shield deixa buida als tokens d'accés (només la fa servir als tokens HMAC i a algunes accions, mai a les files `access_token`). Els tokens existents tenen `secret2 = NULL`, és a dir, cap marca. `POST auth/token/refresh` conserva la marca del token que substitueix.
+
+**Darrera adreça IP (`last_ip`).** Cada petició autenticada amb un token dispara l'esdeveniment `kpapy.token.used`. Amb `Config\Kpapy::$trackTokenIps = true`, la darrera adreça IP de cada token també es desa a la taula `kpapy_token_usage` (clau primària `token_id`, `user_id`, `ip_address`, `used_at`; la crea `php spark migrate -n Kpapy`) i `list()` i `GET me/tokens` la retornen com a `last_ip`. Per no escriure a cada petició, la fila només s'actualitza quan canvia la IP o al cap d'un minut. Sense l'opció, `last_ip` és `null`. `Kpapy\Auth\TokenUsage` (`record()`, `lastIps()`, `forget()`) dona accés a la taula.
 
 ### `Kpapy\Auth\AuthRoutes`
 
@@ -533,14 +578,22 @@ AuthRoutes::web($routes, 'profile', ['filter' => 'session']);  // POST profile/a
 echo AuthRoutes::pendingLogins(auth()->id(), 'profile');       // HTML dels inicis de sessió pendents per al perfil
 ```
 
+`register(RouteCollection $routes, string $prefix = 'api/v1', array $options = [], ?string $loginController = null, ?string $tokenController = null)`: `$options` s'afegeixen a totes les rutes; `$loginController` és el controlador de les rutes `auth/token…` (una subclasse de `Kpapy\Auth\LoginController`) i `$tokenController` el de `me/tokens` (una subclasse de `Kpapy\Auth\TokenController`). `null` fa servir `Config\Kpapy::$loginController` / `$tokenController` (per defecte, les classes de la biblioteca). Qualsevol altra classe llança `InvalidArgumentException`.
+
+```php
+AuthRoutes::register($routes, 'api/v1', [], \App\Controllers\Api\Login::class);
+```
+
 | Endpoint | Filtre | Descripció |
 |---|---|---|
 | `POST /auth/token` | `kpapy:login` | Pas 1: `{"email", "password", "device_name"?, "scopes"?}` → `202` amb un repte |
 | `POST /auth/token/verify` | `kpapy:login` | Pas 2: `{"challenge", "code"}` → `201` `{"token", "token_type": "Bearer", "expires_at", "scopes"}` |
 | `DELETE /auth/token` | `kpapy` | Tanca la sessió: revoca el token actual (`204`) |
 | `POST /auth/token/refresh` | `kpapy` | Token nou amb el mateix nom i abasts; l'anterior es revoca (`201`) |
-| `GET /me/tokens` | `kpapy` | Tokens de l'usuari |
-| `DELETE /me/tokens/{id}` | `kpapy` | Revoca un token |
+| `GET /me/tokens` | `kpapy` | Tokens de l'usuari (necessita l'abast `tokens.manage`, vegeu més avall) |
+| `DELETE /me/tokens/{id}` | `kpapy` | Revoca un token (necessita l'abast `tokens.manage`) |
+
+**L'abast `tokens.manage`.** Un token només pot llistar i revocar els tokens del seu usuari si té abasts il·limitats (`*`) o inclou `Config\Kpapy::$tokensScope` (per defecte `tokens.manage`) o el seu comodí (`tokens.*`); qualsevol altre token rep `403 forbidden`. Les peticions sense token (un autenticador propi sense abasts, `Context::scopes() === null`) i `checkScopes = false` no tenen aquesta restricció. `Config\Kpapy::$tokensScopeRequired = false` torna al comportament de la 1.0 (qualsevol token de l'usuari).
 
 ### Inici de sessió de les apps (`Kpapy\Auth\LoginController`)
 
@@ -581,7 +634,7 @@ interface TwoFactorProvider
 
 ### Esdeveniments
 
-`kpapy.auth.challenge` (`user`, `method`, `device`), `kpapy.auth.login` (`user`, `token_id`, `method`), `kpapy.auth.failed` (`user` o `email`, `method`), `kpapy.auth.logout` (`user`, `token_id`), `kpapy.auth.denied` (`user_id`, `challenge`). Per a un registre d'activitat:
+`kpapy.auth.challenge` (`user`, `method`, `device`), `kpapy.auth.login` (`user`, `token_id`, `method`), `kpapy.auth.failed` (`user` o `email`, `method`), `kpapy.auth.logout` (`user`, `token_id`), `kpapy.auth.denied` (`user_id`, `challenge`), `kpapy.token.used` (`user`, `token`, `token_id`, `ip`, `user_agent`; cada petició autenticada amb un token, el dispara el filtre `kpapy`). Per a un registre d'activitat:
 
 ```php
 \CodeIgniter\Events\Events::on('kpapy.auth.login', static function (array $data): void {
@@ -605,7 +658,23 @@ Nom i descripció del recurs al document OpenAPI. Les operacions pròpies i les 
 
 ### `Kpapy\OpenApi\Generator`
 
-`generate(?string $prefix = null): array` construeix el document a partir de les rutes registrades amb `Resource::routes()` (cada recurs es descriu sol: camps i tipus, camps obligatoris, filtres, ordenació, includes, idiomes, operacions, errors) i dels endpoints d'`AuthRoutes`. `Generator::toYaml(array $data)` el converteix a YAML. `php spark kpapy:openapi` l'escriu en un fitxer.
+`generate(?string $prefix = null): array` construeix el document a partir de les rutes registrades amb `Resource::routes()` (cada recurs es descriu sol: camps i tipus, camps obligatoris, filtres, ordenació, includes, idiomes, operacions, errors), dels endpoints d'`AuthRoutes` i dels endpoints propis (vegeu més avall). `Generator::toYaml(array $data)` el converteix a YAML. `php spark kpapy:openapi` l'escriu en un fitxer.
+
+**Endpoints propis.** Els controladors normals (p. ex. `GET api/v1/me`) no són recursos, i per això es descriuen d'una d'aquestes dues maneres:
+
+- l'**opció de ruta `openapi`**, un *Operation Object* d'OpenAPI (`summary`, `description`, `tags`, `parameters`, `requestBody`, `responses`, `security`…). El camí i el mètode són els de la mateixa ruta:
+
+  ```php
+  $routes->get('api/v1/me', 'Api\Me::index', ['filter' => 'kpapy', 'openapi' => [
+      'tags'      => ['Account'],
+      'summary'   => 'Current user',
+      'responses' => ['200' => ['description' => 'The authenticated user']],
+  ]]);
+  ```
+
+- **`Generator::addPath(string $path, string $method, array $operation): void`** (estàtic), per a allò que no és una ruta d'aquesta aplicació o per descriure una ruta des d'un altre lloc (p. ex. `app/Config/Routes.php` o el fitxer de rutes d'un mòdul). `$path` és el camí complet de la ruta amb el prefix de l'API (`api/v1/status/{code}`); `$method` no distingeix majúscules. Una crida posterior per al mateix camí i mètode substitueix l'anterior. `Generator::clearPaths()` les treu (tests).
+
+En tots dos casos kpapy hi afegeix el que falta: `responses` (`200 OK`), els paràmetres del camí (els grups de CodeIgniter com `(:num)` passen a ser `{p1}`, `{p2}`…; els `{nom}` conserven el nom) i, a les rutes amb el filtre `kpapy:public`, `kpapy:optional` o `kpapy:login`, una `security` opcional. Altrament s'aplica la seguretat global del document (token bearer). El `$prefix` de `generate()` (`--prefix` de la comanda, `prefix()` de `DocsController`) els filtra com la resta. Surten a la pàgina de documentació sota la primera etiqueta (`API` si no en tenen), amb **Prova-ho**.
 
 ---
 
@@ -630,6 +699,9 @@ Nom i descripció del recurs al document OpenAPI. Les operacions pròpies i les 
 | `authenticator` | `shield` | `shield`, `hmac` o una classe |
 | `tokenLifetime` | `2592000` (30 dies) | Segons; `0` = sense caducitat |
 | `defaultScopes` | `['*']` | Abasts dels tokens nous |
+| `tokensScopeRequired`, `tokensScope` | `true`, `tokens.manage` | `GET`/`DELETE me/tokens` només per a tokens il·limitats o amb aquest abast (`false`: qualsevol token, com a la 1.0) |
+| `trackTokenIps` | `false` | Desa la darrera adreça IP de cada token (`kpapy_token_usage`) i la retorna com a `last_ip` |
+| `loginController`, `tokenController` | `Kpapy\Auth\LoginController`, `Kpapy\Auth\TokenController` | Controladors d'`AuthRoutes::register()` |
 | `twoFactorMethods` | `['totp', 'email', 'web']` | Ordre de preferència |
 | `twoFactorProviders` | email, totp, web | Mètode → classe |
 | `challengeLifetime`, `challengeAttempts` | `300`, `5` | Segons i intents fallits |
@@ -639,6 +711,7 @@ Nom i descripció del recurs al document OpenAPI. Les operacions pròpies i les 
 | `rateLimit`, `rateLimitPublic`, `rateLimitLogin` | `120`, `60`, `10` | Peticions per minut (`0` = sense límit) |
 | `uploadPath`, `uploadMaxSize` | `WRITEPATH/uploads/kpapy`, `2048` | Fitxers |
 | `uploadAllowed`, `imageAllowed` | documents i imatges | Extensions |
+| `uploadHandler` | `Kpapy\Storage\LocalUploadHandler` | Classe que desa, esborra i dona la URL dels fitxers ([Fitxers](#fitxers)); per camp: l'opció `handler` |
 | `fileUrlLifetime` | `600` | Segons de les URL signades dels fitxers |
 | `localeFallbacks` | `[]` | Idiomes de reserva dels camps traduïts |
 | `openApiTitle`, `openApiVersion`, `openApiDescription` | `API`, `1.0.0`, `''` | Document OpenAPI |

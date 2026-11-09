@@ -21,12 +21,12 @@ use Kpapy\Resource;
 - [Hooks](#hooks): `beforeInsert`, `afterInsert`, `beforeUpdate`, `afterUpdate`, `beforeDelete`, `afterDelete`, `afterRestore`, `afterWrite`
 - [Permissions](#permissions): `setPermission`, `unset*`, `readOnly`, `setResource`, `setPermissionResolver`, `isAllowed`, `permissionCatalogue`, `impliedPermissions`, `PermissionResolver`, scopes, own records
 - [Masked ids](#masked-ids): `maskIds`, `encodeId`, `decodeId`
-- [Files](#files): upload fields, signed URLs
+- [Files](#files): upload fields, signed URLs, `UploadHandler` (your own storage)
 - [Access from callbacks](#access-from-callbacks): `getTable`, `getPrimaryKey`, `getConfig`, `getRequest`, `user`, `url`, `masksIds`
 - [Errors](#errors): `ApiException`
 - [The `kpapy` filter](#the-kpapy-filter)
-- [Authentication](#authentication): `Authenticator`, `Context`, `TokenService`, `AuthRoutes`, app login, two-factor providers, events
-- [OpenAPI and documentation](#openapi-and-documentation): `describe`, `DocsController`, `Generator`
+- [Authentication](#authentication): `Authenticator`, `Context`, `TokenService`, `AuthRoutes`, the `tokens.manage` scope, app login, two-factor providers, events
+- [OpenAPI and documentation](#openapi-and-documentation): `describe`, `DocsController`, `Generator`, `Generator::addPath`, the `openapi` route option
 - [Configuration](#configuration): `Config\Kpapy`
 
 ---
@@ -453,10 +453,50 @@ The code of an id and the other way round (the context defaults to the table).
 
 ## Files
 
-`fieldType($field, 'upload'|'image', $options)` with `path` (directory; default `Config\Kpapy::$uploadPath/<table>`), `url` (public base URL; without it the files are **private**), `allowed` (extensions), `maxSize` (KB), `subdir` (string with `{field}` placeholders or `fn (array $data): string`), `deleteFiles` (default `true`).
+`fieldType($field, 'upload'|'image', $options)` with `path` (directory; default `Config\Kpapy::$uploadPath/<table>`), `url` (public base URL; without it the files are **private**), `allowed` (extensions), `maxSize` (KB), `subdir` (string with `{field}` placeholders or `fn (array $data): string`), `deleteFiles` (default `true`), `handler` (class name or object implementing `Kpapy\Storage\UploadHandler`; default `Config\Kpapy::$uploadHandler`). `path`, `url` and `subdir` are options of the default handler; your own handler receives every option of the field in `$context['options']`, so it can define its own (e.g. `'disk' => 'private'`).
 
 - **Upload**: in the `multipart/form-data` body of `POST`/`PATCH`, or `POST /r/{id}/files/{field}` (field `<field>` or `file`). The extension (declared and real), the MIME type (images) and the size are checked; the file gets a random name. A replaced file is deleted.
 - **Output**: the public URL, or for private files a **signed URL** to `GET /r/{id}/files/{field}?expires=…&signature=…`, valid `fileUrlLifetime` seconds (the same URL for a minute, so clients can cache it). The record must still be visible.
+
+### Upload handlers: `Kpapy\Storage\UploadHandler`
+
+Where and how the files are stored is decided by an **upload handler**. The default, `Kpapy\Storage\LocalUploadHandler`, does exactly what kpapy 1.0 did (a directory per field, random names, the `path`, `subdir` and `url` options). To store the files elsewhere (your application's storage service, S3, a database…), implement the interface and set it for every resource in `Config\Kpapy::$uploadHandler` or for one field with the `handler` option:
+
+```php
+namespace Kpapy\Storage;
+
+interface UploadHandler
+{
+    // Stores the file (already validated) and returns the value saved in the field's column
+    public function store(\CodeIgniter\HTTP\Files\UploadedFile $file, string $field, array $context): string;
+
+    // Deletes a stored file (replaced file, deleted record, failed save). Must not throw if it no longer exists
+    public function delete(string $stored, string $field, array $context): void;
+
+    // Public URL of the file, or null if it has none (private file)
+    public function url(string $stored, string $field, array $context): ?string;
+}
+```
+
+`$context` contains:
+
+| Key | Type | Value |
+|---|---|---|
+| `resource` | `string` | Resource name (`setResource()`) |
+| `table` | `string` | Table of the resource |
+| `id` | `string\|null` | Primary key of the record (raw, not masked); `null` in `store()` while creating a record (it does not exist yet) |
+| `record` | `array` | `store()`: the old values merged with the new ones; `delete()` / `url()`: the stored row |
+| `options` | `array` | The options of the field in `fieldType()` |
+| `type` | `string` | `upload` or `image` |
+| `config` | `Kpapy\Config\Kpapy` | Configuration of the resource |
+| `api` | `Kpapy\Resource` | The resource (`getResource()`, `user()`, `url()`…) |
+
+Two optional interfaces add the rest:
+
+- **`Kpapy\Storage\UploadReader`** — `read(string $stored, string $field, array $context): ?string` returns the content of the file (`null` = not found). When `url()` returns `null` and the handler is a reader, kpapy gives a signed, temporary URL and serves the file itself at `GET /r/{id}/files/{field}` (MIME type detected from the content, `X-Content-Type-Options: nosniff`). When `url()` returns `null` and the handler cannot read, the field is output as `null`.
+- **`Kpapy\Storage\UploadValidator`** — `validate(UploadedFile $file, string $field, array $context): ?string` replaces kpapy's checks (extension, real extension, MIME type of images, `maxSize`): return an error message for the user, or `null` if the file is valid. Without it, kpapy validates exactly as before, also when you use your own handler.
+
+`LocalUploadHandler` implements `UploadHandler` and `UploadReader`, and has a public `directory(array $context): string`. Extend it to change only one part. The same interface (name and methods) exists in kpcrudy, so one class can serve both libraries.
 
 ---
 
@@ -518,12 +558,17 @@ Shield access tokens for the web profile of the application and for the app logi
 
 | Method | Description |
 |---|---|
-| `create(object $user, string $name, array $scopes = [], ?int $lifetime = null): array` | `['token', 'id', 'name', 'scopes', 'expires_at']`. The raw token can only be seen now. Empty scopes → `defaultScopes`; `$lifetime` in seconds (`null` = `tokenLifetime`, `0` = never) |
-| `list(object $user): array` | `id`, `name`, `scopes`, `last_used_at`, `expires_at`, `created_at`, `current` |
-| `revoke(object $user, int $id): bool` | |
+| `create(object $user, string $name, array $scopes = [], ?int $lifetime = null, array $options = []): array` | `['token', 'id', 'name', 'scopes', 'expires_at', 'kind']`. The raw token can only be seen now. Empty scopes → `defaultScopes`; `$lifetime` in seconds (`null` = `tokenLifetime`, `0` = never). `$options`: `kind` (string, up to 255 characters, default none) marks the token, e.g. `personal` or `app` |
+| `list(object $user, ?string $kind = null): array` | `id`, `name`, `scopes`, `last_used_at`, `expires_at`, `created_at`, `current`, `kind`, `last_ip`. With `$kind`, only the tokens with that mark |
+| `revoke(object $user, int $id): bool` | Also forgets its last IP address |
+| `TokenService::kindOf(object $token): ?string` (static) | The mark of a Shield access token (e.g. `Context::token()`), or `null` |
 | `TokenService::cleanScopes(array $scopes): array` (static) | Keeps only valid scopes |
 
 Personal tokens are created only from the web profile (never through the API), so a leaked token cannot create others.
+
+**Token mark (`kind`).** Stored in the **`secret2` column of Shield's `auth_identities` table**, which Shield leaves empty for access tokens (it uses it only for HMAC tokens and some actions, never for `access_token` rows). Existing tokens have `secret2 = NULL`, i.e. no mark. `POST auth/token/refresh` keeps the mark of the token it replaces.
+
+**Last IP address (`last_ip`).** Every request authenticated with a token fires the `kpapy.token.used` event. With `Config\Kpapy::$trackTokenIps = true`, the last IP address of each token is also stored in the `kpapy_token_usage` table (`token_id` primary key, `user_id`, `ip_address`, `used_at`; created by `php spark migrate -n Kpapy`) and returned as `last_ip` by `list()` and `GET me/tokens`. To avoid a write on every request, the row is updated only when the IP address changes or after a minute. Without the option, `last_ip` is `null`. `Kpapy\Auth\TokenUsage` (`record()`, `lastIps()`, `forget()`) gives access to that table.
 
 ### `Kpapy\Auth\AuthRoutes`
 
@@ -533,14 +578,22 @@ AuthRoutes::web($routes, 'profile', ['filter' => 'session']);  // POST profile/a
 echo AuthRoutes::pendingLogins(auth()->id(), 'profile');       // HTML of the pending sign-ins for the profile page
 ```
 
+`register(RouteCollection $routes, string $prefix = 'api/v1', array $options = [], ?string $loginController = null, ?string $tokenController = null)`: `$options` are added to every route; `$loginController` is the controller of the `auth/token…` routes (a subclass of `Kpapy\Auth\LoginController`) and `$tokenController` the one of `me/tokens` (a subclass of `Kpapy\Auth\TokenController`). `null` uses `Config\Kpapy::$loginController` / `$tokenController` (by default the library's classes). Any other class throws `InvalidArgumentException`.
+
+```php
+AuthRoutes::register($routes, 'api/v1', [], \App\Controllers\Api\Login::class);
+```
+
 | Endpoint | Filter | Description |
 |---|---|---|
 | `POST /auth/token` | `kpapy:login` | Step 1: `{"email", "password", "device_name"?, "scopes"?}` → `202` with a challenge |
 | `POST /auth/token/verify` | `kpapy:login` | Step 2: `{"challenge", "code"}` → `201` `{"token", "token_type": "Bearer", "expires_at", "scopes"}` |
 | `DELETE /auth/token` | `kpapy` | Sign out: revokes the current token (`204`) |
 | `POST /auth/token/refresh` | `kpapy` | New token with the same name and scopes; the old one is revoked (`201`) |
-| `GET /me/tokens` | `kpapy` | Tokens of the user |
-| `DELETE /me/tokens/{id}` | `kpapy` | Revoke a token |
+| `GET /me/tokens` | `kpapy` | Tokens of the user (needs the `tokens.manage` scope, see below) |
+| `DELETE /me/tokens/{id}` | `kpapy` | Revoke a token (needs the `tokens.manage` scope) |
+
+**The `tokens.manage` scope.** A token can list and revoke the tokens of its user only if its scopes are unrestricted (`*`) or include `Config\Kpapy::$tokensScope` (default `tokens.manage`) or its wildcard (`tokens.*`); any other token gets `403 forbidden`. Requests without a token (a custom authenticator without scopes, `Context::scopes() === null`) and `checkScopes = false` are not restricted. `Config\Kpapy::$tokensScopeRequired = false` restores the behaviour of 1.0 (any token of the user).
 
 ### App login (`Kpapy\Auth\LoginController`)
 
@@ -581,7 +634,7 @@ interface TwoFactorProvider
 
 ### Events
 
-`kpapy.auth.challenge` (`user`, `method`, `device`), `kpapy.auth.login` (`user`, `token_id`, `method`), `kpapy.auth.failed` (`user` or `email`, `method`), `kpapy.auth.logout` (`user`, `token_id`), `kpapy.auth.denied` (`user_id`, `challenge`). For an activity log:
+`kpapy.auth.challenge` (`user`, `method`, `device`), `kpapy.auth.login` (`user`, `token_id`, `method`), `kpapy.auth.failed` (`user` or `email`, `method`), `kpapy.auth.logout` (`user`, `token_id`), `kpapy.auth.denied` (`user_id`, `challenge`), `kpapy.token.used` (`user`, `token`, `token_id`, `ip`, `user_agent`; every request authenticated with a token, fired by the `kpapy` filter). For an activity log:
 
 ```php
 \CodeIgniter\Events\Events::on('kpapy.auth.login', static function (array $data): void {
@@ -605,7 +658,23 @@ Name and description of the resource in the OpenAPI document. Custom operations 
 
 ### `Kpapy\OpenApi\Generator`
 
-`generate(?string $prefix = null): array` builds the document from the routes registered with `Resource::routes()` (each resource describes itself: fields and types, required fields, filters, sorting, includes, languages, operations, errors) and the `AuthRoutes` endpoints. `Generator::toYaml(array $data)` converts it to YAML. `php spark kpapy:openapi` writes it to a file.
+`generate(?string $prefix = null): array` builds the document from the routes registered with `Resource::routes()` (each resource describes itself: fields and types, required fields, filters, sorting, includes, languages, operations, errors), the `AuthRoutes` endpoints and your own endpoints (below). `Generator::toYaml(array $data)` converts it to YAML. `php spark kpapy:openapi` writes it to a file.
+
+**Your own endpoints.** Plain controllers (e.g. `GET api/v1/me`) are not resources, so they are described in one of two ways:
+
+- the **`openapi` route option**, an OpenAPI *Operation Object* (`summary`, `description`, `tags`, `parameters`, `requestBody`, `responses`, `security`…). The path and the method come from the route itself:
+
+  ```php
+  $routes->get('api/v1/me', 'Api\Me::index', ['filter' => 'kpapy', 'openapi' => [
+      'tags'      => ['Account'],
+      'summary'   => 'Current user',
+      'responses' => ['200' => ['description' => 'The authenticated user']],
+  ]]);
+  ```
+
+- **`Generator::addPath(string $path, string $method, array $operation): void`** (static), for anything that is not a route of this application or to describe a route in another place (e.g. `app/Config/Routes.php` or a module's routes file). `$path` is the full path of the route with the API prefix (`api/v1/status/{code}`); `$method` is case-insensitive. A later call for the same path and method replaces the earlier one. `Generator::clearPaths()` removes them (tests).
+
+In both cases kpapy adds what is missing: `responses` (`200 OK`), the path parameters (CodeIgniter groups such as `(:num)` become `{p1}`, `{p2}`…; `{name}` placeholders keep their name) and, for routes with the `kpapy:public`, `kpapy:optional` or `kpapy:login` filter, an optional `security`. Otherwise the document's global security (bearer token) applies. The `$prefix` of `generate()` (`--prefix` of the command, `prefix()` of `DocsController`) filters them like the rest. They appear on the documentation page under their first tag (`API` without tags), with **Try it**.
 
 ---
 
@@ -630,6 +699,9 @@ Name and description of the resource in the OpenAPI document. Custom operations 
 | `authenticator` | `shield` | `shield`, `hmac` or a class |
 | `tokenLifetime` | `2592000` (30 days) | Seconds; `0` = never |
 | `defaultScopes` | `['*']` | Scopes of new tokens |
+| `tokensScopeRequired`, `tokensScope` | `true`, `tokens.manage` | `GET`/`DELETE me/tokens` only for unrestricted tokens or tokens with this scope (`false`: any token, as in 1.0) |
+| `trackTokenIps` | `false` | Store the last IP address of each token (`kpapy_token_usage`) and return it as `last_ip` |
+| `loginController`, `tokenController` | `Kpapy\Auth\LoginController`, `Kpapy\Auth\TokenController` | Controllers of `AuthRoutes::register()` |
 | `twoFactorMethods` | `['totp', 'email', 'web']` | Order of preference |
 | `twoFactorProviders` | email, totp, web | Method → class |
 | `challengeLifetime`, `challengeAttempts` | `300`, `5` | Seconds and failed attempts |
@@ -639,6 +711,7 @@ Name and description of the resource in the OpenAPI document. Custom operations 
 | `rateLimit`, `rateLimitPublic`, `rateLimitLogin` | `120`, `60`, `10` | Requests per minute (`0` = no limit) |
 | `uploadPath`, `uploadMaxSize` | `WRITEPATH/uploads/kpapy`, `2048` | Files |
 | `uploadAllowed`, `imageAllowed` | documents and images | Extensions |
+| `uploadHandler` | `Kpapy\Storage\LocalUploadHandler` | Class that stores, deletes and gives the URL of the files ([Files](#files)); per field: the `handler` option |
 | `fileUrlLifetime` | `600` | Seconds of the signed file URLs |
 | `localeFallbacks` | `[]` | Fallback languages of translated fields |
 | `openApiTitle`, `openApiVersion`, `openApiDescription` | `API`, `1.0.0`, `''` | OpenAPI document |

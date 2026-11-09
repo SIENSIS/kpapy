@@ -5,6 +5,44 @@ Documentation is in English and Catalan: [README_EN.md](README_EN.md) · [README
 
 ## [Unreleased]
 
+### Security
+
+- **`GET me/tokens` and `DELETE me/tokens/{id}` now require the `tokens.manage` scope** (behaviour
+  change). Until now any token of a user, even one limited to e.g. `books.list`, could list the user's
+  other tokens and revoke them. Now a token needs unrestricted scopes (`*`), the scope
+  `Config\Kpapy::$tokensScope` (default `tokens.manage`) or its wildcard (`tokens.*`); otherwise the
+  answer is `403`. Tokens created by the app login with the default scopes (`['*']`) and requests without
+  a token are not affected. Set `Config\Kpapy::$tokensScopeRequired = false` to restore the previous
+  behaviour.
+
+### Added
+
+- **Pluggable storage for upload fields**: the `Kpapy\Storage\UploadHandler` interface (`store()`,
+  `delete()`, `url()`; the same as in kpcrudy), the optional `UploadReader` (serve private files with
+  signed URLs) and `UploadValidator` (replace kpapy's file checks) interfaces, and
+  `Kpapy\Storage\LocalUploadHandler`, the default, which keeps the previous behaviour. Configured with
+  `Config\Kpapy::$uploadHandler` or the `handler` option of `fieldType()`.
+- `AuthRoutes::register()` takes the login controller and the `me/tokens` controller as optional
+  parameters (subclasses of `LoginController` / `TokenController`), also configurable with
+  `Config\Kpapy::$loginController` and `$tokenController`.
+- **Own endpoints in the OpenAPI document**: the `openapi` route option and
+  `Kpapy\OpenApi\Generator::addPath()` (and `clearPaths()`) describe plain controllers such as
+  `GET api/v1/me`; path parameters, a default response and the security of public routes are added.
+- `TokenService::create()` takes an `$options` array: `kind` marks a token (stored in the `secret2`
+  column of Shield's `auth_identities`, unused for access tokens). `TokenService::list()` takes an
+  optional `$kind` filter, `TokenService::kindOf()` reads the mark, and `POST auth/token/refresh` keeps it.
+- The `kpapy.token.used` event (`user`, `token`, `token_id`, `ip`, `user_agent`) on every request
+  authenticated with a token, and, with `Config\Kpapy::$trackTokenIps = true`, the last IP address of
+  each token in the new `kpapy_token_usage` table (migration `CreateTokenUsage`,
+  `php spark migrate -n Kpapy`), returned as `last_ip`.
+- `TokenService::list()` and `GET me/tokens` return `kind` and `last_ip` (`null` when unknown).
+
+### Changed
+
+- The download of private files (`GET /{id}/files/{field}`) detects the MIME type from the content and
+  goes through the upload handler; the default handler only serves files inside the field's directory
+  (symbolic links out of it are refused).
+
 ## [1.0.1] - 2026-11-06
 
 ### Fixed

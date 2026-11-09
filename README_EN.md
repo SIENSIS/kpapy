@@ -11,16 +11,16 @@ Features:
 
 - **List** with pagination (by page or by **cursor**), **filters** with operators, **search**, **sorting**, **sparse fields** and **includes** of related records
 - **Details**, **create** (`POST`), **partial and full update** (`PATCH`, `PUT`), **delete**, **trash**, **restore** and **purge** (CodeIgniter soft deletes)
-- **1-N and N-N relations**, **translated fields** in a child table (`?lang=` or `Accept-Language`), **multiselect** fields, **file uploads** with signed, temporary URLs for private files
+- **1-N and N-N relations**, **translated fields** in a child table (`?lang=` or `Accept-Language`), **multiselect** fields, **file uploads** with signed, temporary URLs for private files and **pluggable storage** (`UploadHandler`: store them through your own storage service)
 - **Custom operations** (`POST /books/{id}/lend`) and **bulk actions** (`POST /books/bulk`), with hooks before and after every write
 - Validation with CodeIgniter rules (also inferred from the table), errors as **RFC 9457** `application/problem+json`, translated into six languages
 - **Central permissions** (`PermissionResolver`), `setPermission()` per resource and the permission catalogue
 - **Masked ids** in every URL and response, with a replaceable masker (`IdMasker`)
-- **Authentication with CodeIgniter Shield access tokens**, token **scopes** intersected with the user's permissions, HMAC tokens for server-to-server integrations
-- **Login for apps with two-factor authentication**: the user's active method (authenticator app, email code) or, for users without 2FA, a **code shown in their web profile**
+- **Authentication with CodeIgniter Shield access tokens**, token **scopes** intersected with the user's permissions (`tokens.manage` to manage tokens through the API), HMAC tokens for server-to-server integrations, token **marks** (`kind`) and the **last IP address** of each token
+- **Login for apps with two-factor authentication**: the user's active method (authenticator app, email code) or, for users without 2FA, a **code shown in their web profile**; your own login controller with the same routes
 - **ETags**, conditional `GET` (`304`) and optimistic concurrency with `If-Match` (`412`)
 - **CORS**, **rate limits** per token, per IP and for the login, HTTPS required in production
-- **OpenAPI 3.1** generated from the resources, and a documentation page where every endpoint can be **tried**: send real requests with a token (or signing in like an app, with the second factor), see the status, headers and body, copy them as `curl`
+- **OpenAPI 3.1** generated from the resources and your own endpoints (the `openapi` route option, `Generator::addPath()`), and a documentation page where every endpoint can be **tried**: send real requests with a token (or signing in like an app, with the second factor), see the status, headers and body, copy them as `curl`
 - `spark` commands: generate a resource from a table, the OpenAPI document, list the API routes, create tokens, publish the configuration, install the demo
 
 ![kpapy demo console](screenshots/02-console-list-books.png)
