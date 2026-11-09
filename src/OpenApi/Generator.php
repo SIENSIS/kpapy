@@ -12,13 +12,24 @@ use Throwable;
 
 /**
  * Genera el document OpenAPI 3.1 de les rutes registrades amb Resource::routes() i
- * AuthRoutes::register().
+ * AuthRoutes::register(), i dels endpoints propis descrits amb l'opció de ruta 'openapi' o
+ * amb Generator::addPath().
  *
  *     $spec = (new Generator())->generate();            // array
  *     php spark kpapy:openapi --output public/api/openapi.json
+ *
+ *     $routes->get('api/v1/me', 'Api\Me::index', ['filter' => 'kpapy', 'openapi' => ['summary' => 'Current user']]);
+ *     Generator::addPath('api/v1/status', 'get', ['summary' => 'Status of the service']);
  */
 class Generator
 {
+    /**
+     * Operacions afegides amb addPath(): camí => mètode => operació.
+     *
+     * @var array<string, array<string, array<string, mixed>>>
+     */
+    protected static array $extraPaths = [];
+
     protected KpapyConfig $config;
 
     /**
@@ -73,6 +84,15 @@ class Generator
             $paths += $this->authPaths($authPrefix);
         }
 
+        foreach ($this->customOperations() as [$path, $method, $operation, $public]) {
+            if ($prefix !== null && ! str_starts_with($path, trim($prefix, '/'))) {
+                continue;
+            }
+
+            $url                  = '/' . $this->openApiPath($path);
+            $paths[$url][$method] = $this->customOperation($url, $operation, $public);
+        }
+
         ksort($paths);
 
         return [
@@ -91,6 +111,91 @@ class Generator
             ],
             'security' => [['bearer' => []]],
         ];
+    }
+
+    /**
+     * Afegeix (o substitueix) la descripció d'un endpoint propi al document. El camí és el de la
+     * ruta, amb el prefix de l'API ('api/v1/me'); pot tenir grups de CodeIgniter ((:num)...) o
+     * paràmetres OpenAPI ({id}). L'operació és un objecte Operation d'OpenAPI: 'summary',
+     * 'description', 'tags', 'parameters', 'requestBody', 'responses', 'security'...
+     *
+     * @param array<string, mixed> $operation
+     */
+    public static function addPath(string $path, string $method, array $operation): void
+    {
+        self::$extraPaths[trim($path, '/')][strtolower($method)] = $operation;
+    }
+
+    /**
+     * Treu els endpoints afegits amb addPath() (proves).
+     */
+    public static function clearPaths(): void
+    {
+        self::$extraPaths = [];
+    }
+
+    /**
+     * Endpoints propis: rutes amb l'opció 'openapi' i els de addPath().
+     *
+     * @return list<array{0: string, 1: string, 2: array<string, mixed>, 3: bool}> [camí, mètode, operació, públic]
+     */
+    protected function customOperations(): array
+    {
+        $collection = $this->collection();
+        $result     = [];
+
+        foreach (['get', 'post', 'put', 'patch', 'delete'] as $method) {
+            foreach (array_unique([strtoupper($method), $method]) as $verb) {
+                foreach ($collection->getRoutes($verb) as $key => $handler) {
+                    $options = $collection->getRoutesOptions((string) $key, $verb);
+
+                    if (! isset($options['openapi']) || ! is_array($options['openapi'])) {
+                        continue;
+                    }
+
+                    $filters = (array) ($options['filter'] ?? []);
+                    $public  = (bool) array_filter($filters, static fn ($f): bool => is_string($f) && (str_contains($f, ':public') || str_contains($f, ':optional') || str_contains($f, ':login')));
+
+                    $result[$method . ' ' . $key] = [(string) $key, $method, $options['openapi'], $public];
+                }
+            }
+        }
+
+        foreach (self::$extraPaths as $path => $methods) {
+            foreach ($methods as $method => $operation) {
+                $result[$method . ' ' . $path] = [$path, $method, $operation, false];
+            }
+        }
+
+        return array_values($result);
+    }
+
+    /**
+     * Completa l'operació d'un endpoint propi: respostes, paràmetres del camí i seguretat.
+     *
+     * @param array<string, mixed> $operation
+     *
+     * @return array<string, mixed>
+     */
+    protected function customOperation(string $url, array $operation, bool $public): array
+    {
+        $operation['responses'] ??= ['200' => ['description' => 'OK']];
+
+        $declared = array_map(static fn ($p): string => is_array($p) ? (string) ($p['name'] ?? '') : '', (array) ($operation['parameters'] ?? []));
+
+        preg_match_all('/\{([^}]+)\}/', $url, $matches);
+
+        foreach ($matches[1] as $name) {
+            if (! in_array($name, $declared, true)) {
+                $operation['parameters'][] = ['name' => $name, 'in' => 'path', 'required' => true, 'schema' => ['type' => 'string']];
+            }
+        }
+
+        if ($public && ! array_key_exists('security', $operation)) {
+            $operation['security'] = [[], ['bearer' => []]];
+        }
+
+        return $operation;
     }
 
     /**

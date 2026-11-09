@@ -61,6 +61,12 @@ final class OpenApiAndFilesTest extends CIUnitTestCase
             ->addOperation('archive', static fn () => null, ['description' => 'Archive it'])
             ->render(), ['filter' => 'kpapy']);
         \Kpapy\OpenApi\DocsController::routes($routes, 'api/v1/docs');
+        $routes->get('api/v1/me', static fn () => service('response')->setJSON(['data' => []]), ['filter' => 'kpapy', 'openapi' => [
+            'tags' => ['Account'], 'summary' => 'Current user',
+            'responses' => ['200' => ['description' => 'The authenticated user']],
+        ]]);
+        $routes->get('api/v1/ping/(:num)', static fn () => '', ['filter' => 'kpapy:public', 'openapi' => ['summary' => 'Ping']]);
+        $routes->get('internal/health', static fn () => '', ['openapi' => ['summary' => 'Health']]);
         $this->routes = $routes;
     }
 
@@ -164,5 +170,39 @@ final class OpenApiAndFilesTest extends CIUnitTestCase
         $this->assertProblem($this->postJson('api/v1/docs-items', ['name' => 'X', 'status' => 'nope']), 422, 'validation');
         $this->postJson('api/v1/docs-items', ['name' => 'Y', 'status' => 'final'])->assertStatus(201);
         $this->assertSame('final', $this->json($this->getJson('api/v1/docs-items', ['filter' => ['status' => 'final']]))['data'][0]['status']);
+    }
+
+    public function testCustomEndpointsInTheOpenApiDocument(): void
+    {
+        Generator::addPath('api/v1/status/{code}', 'GET', ['summary' => 'Status of a service', 'tags' => ['Service']]);
+
+        try {
+            $spec = (new Generator(null, $this->routes))->generate();
+
+            $me = $spec['paths']['/api/v1/me']['get'];
+            $this->assertSame('Current user', $me['summary']);
+            $this->assertSame(['Account'], $me['tags']);
+            $this->assertSame('The authenticated user', $me['responses']['200']['description']);
+            $this->assertArrayNotHasKey('security', $me, 'kpapy filter: the global bearer security applies');
+
+            $ping = $spec['paths']['/api/v1/ping/{p1}']['get'];
+            $this->assertSame('p1', $ping['parameters'][0]['name'], 'path parameters are added');
+            $this->assertSame([[], ['bearer' => []]], $ping['security'], 'public route');
+            $this->assertSame('OK', $ping['responses']['200']['description'], 'a default response');
+
+            $this->assertSame('Status of a service', $spec['paths']['/api/v1/status/{code}']['get']['summary']);
+            $this->assertSame('code', $spec['paths']['/api/v1/status/{code}']['get']['parameters'][0]['name']);
+            $this->assertArrayHasKey('/internal/health', $spec['paths']);
+
+            // Only the paths with the prefix
+            $only = (new Generator(null, $this->routes))->generate('api/v1');
+            $this->assertArrayHasKey('/api/v1/me', $only['paths']);
+            $this->assertArrayNotHasKey('/internal/health', $only['paths']);
+
+            // The documentation page shows them
+            $this->get('api/v1/docs')->assertSee('Current user');
+        } finally {
+            Generator::clearPaths();
+        }
     }
 }
