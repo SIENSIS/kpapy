@@ -90,6 +90,7 @@ return [
         'maskKeyTooShort'   => 'Kpapy: $maskKey ha de tenir com a mínim 32 caràcters.',
         'cannotCreateDir'   => 'Kpapy: no es pot crear el directori "{0}".',
         'invalidKeyFile'    => 'Kpapy: el fitxer de clau "{0}" no és vàlid.',
+        'invalidUploadHandler' => 'Kpapy: el gestor de fitxers del camp "{0}" no implementa Kpapy\\Storage\\UploadHandler.',
         'invalidProvider'   => 'Kpapy: el proveïdor de dos factors "{0}" no és vàlid.',
         'shieldRequired'    => 'Kpapy: aquesta funcionalitat necessita codeigniter4/shield.',
     ],

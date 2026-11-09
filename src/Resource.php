@@ -102,6 +102,13 @@ class Resource
      */
     protected array $hooks = [];
 
+    /**
+     * Gestors de fitxers ja creats, per camp.
+     *
+     * @var array<string, \Kpapy\Storage\UploadHandler>
+     */
+    protected array $uploadHandlers = [];
+
     protected PermissionResolver|Closure|null $resolver = null;
     protected bool $resolverResolved = false;
 

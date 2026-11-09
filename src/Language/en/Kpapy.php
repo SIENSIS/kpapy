@@ -90,6 +90,7 @@ return [
         'maskKeyTooShort'   => 'Kpapy: $maskKey must be at least 32 characters long.',
         'cannotCreateDir'   => 'Kpapy: cannot create the directory "{0}".',
         'invalidKeyFile'    => 'Kpapy: the key file "{0}" is not valid.',
+        'invalidUploadHandler' => 'Kpapy: the upload handler of the field "{0}" does not implement Kpapy\\Storage\\UploadHandler.',
         'invalidProvider'   => 'Kpapy: the two-factor provider "{0}" is not valid.',
         'shieldRequired'    => 'Kpapy: this feature requires codeigniter4/shield.',
     ],

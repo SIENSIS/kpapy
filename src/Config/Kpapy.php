@@ -222,6 +222,14 @@ class Kpapy extends BaseConfig
      */
     public int $fileUrlLifetime = 600;
 
+    /**
+     * Gestor que desa, esborra i dona la URL dels fitxers (Kpapy\Storage\UploadHandler).
+     * Un camp en pot fer servir un altre amb l'opció 'handler' de fieldType().
+     *
+     * @var class-string<\Kpapy\Storage\UploadHandler>
+     */
+    public string $uploadHandler = \Kpapy\Storage\LocalUploadHandler::class;
+
     // ------------------------------------------------------------------
     // Idiomes dels camps traduïts
     // ------------------------------------------------------------------

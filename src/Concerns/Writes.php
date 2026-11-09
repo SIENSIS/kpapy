@@ -9,6 +9,10 @@ use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\HTTP\ResponseInterface;
 use Kpapy\Http\ApiException;
 use Kpapy\Secret;
+use Kpapy\Storage\UploadHandler;
+use Kpapy\Storage\UploadReader;
+use Kpapy\Storage\UploadValidator;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -383,7 +387,7 @@ trait Writes
         $errors += $this->validateTranslations($tr, $mode, $id);
 
         foreach ($files as $field => $file) {
-            if (($message = $this->checkUpload($field, $file)) !== null) {
+            if (($message = $this->checkUpload($field, $file, $id, [...(array) $old, ...$data])) !== null) {
                 $errors[$field] = [$message];
             }
         }
@@ -724,7 +728,7 @@ trait Writes
         $stored = [];
 
         foreach ($files as $field => $file) {
-            $stored[$field] = $this->storeUpload($field, $file, [...(array) $old, ...$data]);
+            $stored[$field] = $this->storeUpload($field, $file, [...(array) $old, ...$data], $id);
             $data[$field]   = $stored[$field];
         }
 
@@ -772,8 +776,8 @@ trait Writes
         } catch (Throwable $e) {
             $this->db->transRollback();
 
-            foreach ($stored as $path) {
-                @unlink($this->uploadDir(array_search($path, $stored, true)) . '/' . $path);
+            foreach ($stored as $field => $path) {
+                $this->removeFile($field, $path, $id, [...(array) $old, ...$data]);
             }
 
             throw $e;
@@ -784,7 +788,7 @@ trait Writes
         // Fitxers substituïts
         foreach ($stored as $field => $path) {
             if ($old !== null && ! empty($old[$field]) && $old[$field] !== $path) {
-                $this->removeFile($field, (string) $old[$field]);
+                $this->removeFile($field, (string) $old[$field], (string) $id, $old);
             }
         }
 
@@ -865,7 +869,7 @@ trait Writes
 
             foreach ($this->types as $field => $type) {
                 if (in_array($type['type'], ['upload', 'image'], true) && ! empty($row[$field]) && ($type['options']['deleteFiles'] ?? true)) {
-                    $this->removeFile($field, (string) $row[$field]);
+                    $this->removeFile($field, (string) $row[$field], $id, $row);
                 }
             }
         } else {
@@ -917,7 +921,7 @@ trait Writes
             throw ApiException::validation([$field => [lang('Kpapy.fileMissing')]]);
         }
 
-        if (($message = $this->checkUpload($field, $file)) !== null) {
+        if (($message = $this->checkUpload($field, $file, $id, $old)) !== null) {
             throw ApiException::validation([$field => [$message]]);
         }
 
@@ -942,20 +946,23 @@ trait Writes
             throw ApiException::forbidden(lang('Kpapy.invalidSignature'));
         }
 
-        $row  = $this->findRecord($id) ?? throw ApiException::notFound();
-        $path = (string) ($row[$field] ?? '');
-        $file = $this->uploadDir($field) . '/' . $path;
+        $row     = $this->findRecord($id) ?? throw ApiException::notFound();
+        $path    = (string) ($row[$field] ?? '');
+        $handler = $this->uploadHandler($field);
+        $content = $path === '' || ! $handler instanceof UploadReader ? null : $handler->read($path, $field, $this->uploadContext($field, (string) $row[$this->primaryKey], $row));
 
-        if ($path === '' || str_contains($path, '..') || ! is_file($file)) {
+        if ($content === null) {
             throw ApiException::notFound();
         }
 
+        $mime = (new \finfo(FILEINFO_MIME_TYPE))->buffer($content) ?: 'application/octet-stream';
+
         return service('response')
-            ->setHeader('Content-Type', mime_content_type($file) ?: 'application/octet-stream')
-            ->setHeader('Content-Disposition', 'inline; filename="' . basename($path) . '"')
+            ->setHeader('Content-Type', $mime)
+            ->setHeader('Content-Disposition', 'inline; filename="' . str_replace(['"', '\\', "\r", "\n"], '', basename($path)) . '"')
             ->setHeader('X-Content-Type-Options', 'nosniff')
             ->setHeader('Cache-Control', 'private, max-age=' . max(0, $expires - time()))
-            ->setBody((string) file_get_contents($file));
+            ->setBody($content);
     }
 
     /**
@@ -969,13 +976,19 @@ trait Writes
             return null;
         }
 
-        $options = $this->typeOptions($field);
+        $id      = (string) $row[$this->primaryKey];
+        $handler = $this->uploadHandler($field);
+        $public  = $handler->url($path, $field, $this->uploadContext($field, $id, $row));
 
-        if (isset($options['url'])) {
-            return rtrim((string) $options['url'], '/') . '/' . implode('/', array_map('rawurlencode', explode('/', $path)));
+        if ($public !== null) {
+            return $public;
         }
 
-        $id      = (string) $row[$this->primaryKey];
+        // Fitxer privat: URL signada cap a downloadOperation(), si el gestor el pot llegir
+        if (! $handler instanceof UploadReader) {
+            return null;
+        }
+
         $expires = time() + $this->config->fileUrlLifetime;
         $expires -= $expires % 60;   // la mateixa URL durant un minut: el client la pot desar en memòria cau
 
@@ -996,8 +1009,17 @@ trait Writes
         return rtrim((string) ($options['path'] ?? $this->config->uploadPath . '/' . $this->table), '/\\');
     }
 
-    protected function checkUpload(string $field, UploadedFile $file): ?string
+    /**
+     * @param array<string, mixed>|null $record
+     */
+    protected function checkUpload(string $field, UploadedFile $file, ?string $id = null, ?array $record = null): ?string
     {
+        $handler = $this->uploadHandler($field);
+
+        if ($handler instanceof UploadValidator) {
+            return $handler->validate($file, $field, $this->uploadContext($field, $id, (array) $record));
+        }
+
         $options = $this->typeOptions($field);
         $allowed = (array) ($options['allowed'] ?? ($this->typeOf($field) === 'image' ? $this->config->imageAllowed : $this->config->uploadAllowed));
         $maxSize = (int) ($options['maxSize'] ?? $this->config->uploadMaxSize);
@@ -1025,46 +1047,70 @@ trait Writes
     }
 
     /**
-     * @param array<string, mixed> $data
+     * Desa un fitxer amb el gestor del camp (UploadHandler) i retorna el valor de la columna.
+     *
+     * @param array<string, mixed> $data El registre (valors antics + nous)
      */
-    protected function storeUpload(string $field, UploadedFile $file, array $data): string
+    protected function storeUpload(string $field, UploadedFile $file, array $data, ?string $id = null): string
     {
-        $options = $this->typeOptions($field);
-        $subdir  = $options['subdir'] ?? '';
-
-        if ($subdir instanceof Closure) {
-            $subdir = (string) $subdir($data);
-        }
-
-        $subdir = trim(preg_replace_callback('/\{(\w+)\}/', static fn (array $m): string => (string) ($data[$m[1]] ?? ''), (string) $subdir) ?? '', '/');
-
-        if ($subdir !== '' && ! preg_match('#^[A-Za-z0-9_\-]+(/[A-Za-z0-9_\-]+)*$#', $subdir)) {
-            $subdir = '';
-        }
-
-        $dir = $this->uploadDir($field) . ($subdir === '' ? '' : '/' . $subdir);
-
-        if (! is_dir($dir) && ! @mkdir($dir, 0775, true) && ! is_dir($dir)) {
-            throw new ApiException(500, 'server-error', lang('Kpapy.exceptions.cannotCreateDir', [$dir]));
-        }
-
-        $name = $file->getRandomName();
-        $file->move($dir, $name);
-
-        return ($subdir === '' ? '' : $subdir . '/') . $name;
+        return $this->uploadHandler($field)->store($file, $field, $this->uploadContext($field, $id, $data));
     }
 
-    protected function removeFile(string $field, string $path): void
+    /**
+     * Esborra un fitxer amb el gestor del camp.
+     *
+     * @param array<string, mixed> $record
+     */
+    protected function removeFile(string $field, string $path, ?string $id = null, array $record = []): void
     {
-        if ($path === '' || str_contains($path, '..')) {
+        if ($path === '') {
             return;
         }
 
-        $root = realpath($this->uploadDir($field));
-        $file = realpath($this->uploadDir($field) . '/' . $path);
+        $this->uploadHandler($field)->delete($path, $field, $this->uploadContext($field, $id, $record));
+    }
 
-        if ($root !== false && $file !== false && str_starts_with($file, $root . DIRECTORY_SEPARATOR) && is_file($file)) {
-            @unlink($file);
+    /**
+     * Gestor dels fitxers d'un camp: l'opció 'handler' del camp (classe o objecte) o
+     * Config\Kpapy::$uploadHandler.
+     */
+    protected function uploadHandler(string $field): UploadHandler
+    {
+        if (isset($this->uploadHandlers[$field])) {
+            return $this->uploadHandlers[$field];
         }
+
+        $handler = $this->typeOptions($field)['handler'] ?? $this->config->uploadHandler;
+
+        if (is_string($handler) && class_exists($handler)) {
+            $handler = new $handler();
+        }
+
+        if (! $handler instanceof UploadHandler) {
+            throw new RuntimeException(lang('Kpapy.exceptions.invalidUploadHandler', [$field]));
+        }
+
+        return $this->uploadHandlers[$field] = $handler;
+    }
+
+    /**
+     * Context que reben els mètodes de UploadHandler.
+     *
+     * @param array<string, mixed> $record
+     *
+     * @return array{resource: string, table: string, id: string|null, record: array<string, mixed>, options: array<string, mixed>, type: string, config: \Kpapy\Config\Kpapy, api: \Kpapy\Resource}
+     */
+    protected function uploadContext(string $field, ?string $id, array $record): array
+    {
+        return [
+            'resource' => $this->getResource(),
+            'table'    => $this->table,
+            'id'       => $id,
+            'record'   => $record,
+            'options'  => $this->typeOptions($field),
+            'type'     => $this->typeOf($field),
+            'config'   => $this->config,
+            'api'      => $this,
+        ];
     }
 }
