@@ -74,6 +74,7 @@ return [
         'pendingDeny'        => 'Não fui eu',
         'pendingNone'        => 'Não há inícios de sessão pendentes.',
         'tokenCreated'       => 'Copie o token agora: não voltará a ser mostrado.',
+        'tokensScope'        => 'Este token não pode gerir tokens: precisa do âmbito "{0}".',
     ],
 
     // Errors of the developer (exceptions)

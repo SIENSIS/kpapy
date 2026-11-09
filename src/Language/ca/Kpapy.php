@@ -74,6 +74,7 @@ return [
         'pendingDeny'        => 'No he estat jo',
         'pendingNone'        => 'No hi ha cap inici de sessió pendent.',
         'tokenCreated'       => 'Copia el token ara: no es tornarà a mostrar.',
+        'tokensScope'        => 'Aquest token no pot gestionar tokens: necessita l\'abast "{0}".',
     ],
 
     // Errors of the developer (exceptions)

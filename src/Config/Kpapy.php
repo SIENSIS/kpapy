@@ -139,6 +139,15 @@ class Kpapy extends BaseConfig
     public array $defaultScopes = ['*'];
 
     /**
+     * GET me/tokens i DELETE me/tokens/{id} només accepten tokens amb abasts il·limitats ("*")
+     * o amb l'abast $tokensScope (o "tokens.*"). Les peticions sense token (sessió web) sempre
+     * hi tenen accés. false: qualsevol token de l'usuari hi té accés (comportament de la 1.0).
+     */
+    public bool $tokensScopeRequired = true;
+
+    public string $tokensScope = 'tokens.manage';
+
+    /**
      * Controladors de les rutes de AuthRoutes::register() (si no se'n passen d'altres en cridar-lo):
      * l'inici de sessió de les apps (subclasse de Kpapy\Auth\LoginController) i me/tokens
      * (subclasse de Kpapy\Auth\TokenController).

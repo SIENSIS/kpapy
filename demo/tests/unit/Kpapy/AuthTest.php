@@ -197,6 +197,38 @@ final class AuthTest extends CIUnitTestCase
         $this->expectException(\InvalidArgumentException::class);
         AuthRoutes::register($routes, 'api/v4', [], \stdClass::class);
     }
+
+    public function testManagingTokensNeedsTheTokensScope(): void
+    {
+        $service   = new TokenService();
+        $limited   = $service->create($this->user, 'Limited', ['notes.list']);
+        $manager   = $service->create($this->user, 'Manager', ['notes.list', 'tokens.manage']);
+        $wildcard  = $service->create($this->user, 'Wildcard', ['tokens.*']);
+        $unlimited = $service->create($this->user, 'Everything', ['*']);
+        $as        = static fn (array $t): array => ['Authorization' => 'Bearer ' . $t['token']];
+
+        $refused = $this->withHeaders($as($limited))->get('api/v1/me/tokens');
+        $refused->assertStatus(403);
+        $this->assertStringContainsString('tokens.manage', json_decode($refused->response()->getBody(), true)['detail']);
+        $this->withHeaders($as($limited))->delete('api/v1/me/tokens/' . $manager['id'])->assertStatus(403);
+        $this->withHeaders($as($limited))->get('api/v1/notes')->assertStatus(200);
+
+        $this->withHeaders($as($manager))->get('api/v1/me/tokens')->assertStatus(200);
+        $this->withHeaders($as($wildcard))->get('api/v1/me/tokens')->assertStatus(200);
+        $this->withHeaders($as($unlimited))->get('api/v1/me/tokens')->assertStatus(200);
+        $this->withHeaders($as($manager))->delete('api/v1/me/tokens/' . $limited['id'])->assertStatus(204);
+
+        // Previous behaviour, for the projects that need it
+        $config                      = config('Kpapy');
+        $config->tokensScopeRequired = false;
+
+        try {
+            $other = $service->create($this->user, 'Other', ['notes.list']);
+            $this->withHeaders($as($other))->get('api/v1/me/tokens')->assertStatus(200);
+        } finally {
+            $config->tokensScopeRequired = true;
+        }
+    }
 }
 
 final class CustomLoginController extends \Kpapy\Auth\LoginController

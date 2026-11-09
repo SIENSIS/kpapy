@@ -74,6 +74,7 @@ return [
         'pendingDeny'        => 'Ce n\'était pas moi',
         'pendingNone'        => 'Aucune connexion en attente.',
         'tokenCreated'       => 'Copiez le jeton maintenant : il ne sera plus affiché.',
+        'tokensScope'        => 'Ce jeton ne peut pas gérer les jetons : il lui faut la portée « {0} ».',
     ],
 
     // Errors of the developer (exceptions)

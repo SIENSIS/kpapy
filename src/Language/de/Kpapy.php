@@ -74,6 +74,7 @@ return [
         'pendingDeny'        => 'Das war ich nicht',
         'pendingNone'        => 'Es gibt keine ausstehenden Anmeldungen.',
         'tokenCreated'       => 'Kopieren Sie das Token jetzt: Es wird nicht noch einmal angezeigt.',
+        'tokensScope'        => 'Dieses Token kann keine Tokens verwalten: Es benötigt den Scope „{0}“.',
     ],
 
     // Errors of the developer (exceptions)

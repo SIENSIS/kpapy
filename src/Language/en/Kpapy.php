@@ -74,6 +74,7 @@ return [
         'pendingDeny'        => 'It was not me',
         'pendingNone'        => 'There are no pending sign-ins.',
         'tokenCreated'       => 'Copy the token now: it will not be shown again.',
+        'tokensScope'        => 'This token cannot manage tokens: it needs the "{0}" scope.',
     ],
 
     // Errors of the developer (exceptions)
