@@ -10,8 +10,10 @@ use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Kpapy\Auth\Authenticator;
 use Kpapy\Auth\Context;
+use Kpapy\Auth\Events;
 use Kpapy\Auth\ShieldHmacAuthenticator;
 use Kpapy\Auth\ShieldTokenAuthenticator;
+use Kpapy\Auth\TokenUsage;
 use Kpapy\Config\Kpapy as KpapyConfig;
 use Kpapy\Http\ApiException;
 use Kpapy\Http\Responder;
@@ -63,6 +65,10 @@ class ApiFilter implements FilterInterface
 
             if ($result !== null) {
                 Context::set($result['user'], $result['scopes'], $result['token']);
+
+                if (isset($result['token']->id)) {
+                    $this->tokenUsed($result['user'], $result['token'], $request, $config);
+                }
             }
 
             $limit = in_array('login', $arguments, true) ? $config->rateLimitLogin : ($result === null ? $config->rateLimitPublic : $config->rateLimit);
@@ -103,6 +109,27 @@ class ApiFilter implements FilterInterface
         }
 
         return $authenticator;
+    }
+
+    /**
+     * Ús d'un token: l'esdeveniment kpapy.token.used (user, token, token_id, ip, user_agent) i,
+     * amb Config\Kpapy::$trackTokenIps, la darrera IP a la taula kpapy_token_usage.
+     */
+    protected function tokenUsed(object $user, object $token, IncomingRequest $request, KpapyConfig $config): void
+    {
+        $ip = $request->getIPAddress();
+
+        Events::fire('kpapy.token.used', [
+            'user'       => $user,
+            'token'      => $token,
+            'token_id'   => (int) $token->id,
+            'ip'         => $ip,
+            'user_agent' => $request->getHeaderLine('User-Agent'),
+        ]);
+
+        if ($config->trackTokenIps) {
+            (new TokenUsage())->record((int) $token->id, $user->id ?? null, $ip);
+        }
     }
 
     /**

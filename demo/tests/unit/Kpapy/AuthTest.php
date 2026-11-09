@@ -229,6 +229,56 @@ final class AuthTest extends CIUnitTestCase
             $config->tokensScopeRequired = true;
         }
     }
+
+    public function testTokenKindAndLastIpAddress(): void
+    {
+        $service  = new TokenService();
+        $personal = $service->create($this->user, 'Personal', ['*'], null, ['kind' => 'personal']);
+        $app      = $service->create($this->user, 'App', ['*']);
+
+        $this->assertSame('personal', $personal['kind']);
+        $this->assertNull($app['kind']);
+        $this->assertSame('personal', $this->db->table('auth_identities')->where('id', $personal['id'])->get()->getRow()->secret2, 'stored in Shield\'s secret2 column');
+        $this->assertSame([$personal['id']], array_column($service->list($this->user, 'personal'), 'id'));
+
+        $events = [];
+        \CodeIgniter\Events\Events::on('kpapy.token.used', static function (array $data) use (&$events): void {
+            $events[] = $data;
+        });
+
+        // Without tracking: the event, but no last IP
+        $this->withHeaders(['Authorization' => 'Bearer ' . $personal['token']])->get('api/v1/notes')->assertStatus(200);
+        $this->assertSame($personal['id'], $events[0]['token_id']);
+        $this->assertSame('0.0.0.0', $events[0]['ip']);
+        $this->assertSame(0, $this->db->table('kpapy_token_usage')->countAllResults());
+
+        $config                = config('Kpapy');
+        $config->trackTokenIps = true;
+
+        try {
+            $this->withHeaders(['Authorization' => 'Bearer ' . $personal['token']])->get('api/v1/notes')->assertStatus(200);
+            $list = json_decode($this->withHeaders(['Authorization' => 'Bearer ' . $personal['token']])->get('api/v1/me/tokens')->response()->getBody(), true)['data'];
+            $byId = array_column($list, null, 'id');
+
+            $this->assertSame('0.0.0.0', $byId[$personal['id']]['last_ip']);
+            $this->assertSame('personal', $byId[$personal['id']]['kind']);
+            $this->assertNull($byId[$app['id']]['last_ip']);
+
+            // A refreshed token keeps its kind; a revoked one loses its usage row
+            $refreshed = json_decode($this->withHeaders(['Authorization' => 'Bearer ' . $personal['token']])->post('api/v1/auth/token/refresh')->response()->getBody(), true)['data'];
+            $this->assertSame(['personal'], array_column($service->list($this->user, 'personal'), 'kind'));
+            $this->assertNotSame($personal['id'], $service->list($this->user, 'personal')[0]['id']);
+            $this->assertNotEmpty($refreshed['token']);
+
+            $this->withHeaders(['Authorization' => 'Bearer ' . $app['token']])->get('api/v1/notes')->assertStatus(200);
+            $this->assertSame(1, $this->db->table('kpapy_token_usage')->where('token_id', $app['id'])->countAllResults());
+            $this->assertTrue($service->revoke($this->user, $app['id']));
+            $this->assertSame(0, $this->db->table('kpapy_token_usage')->where('token_id', $app['id'])->countAllResults());
+        } finally {
+            $config->trackTokenIps = false;
+            \CodeIgniter\Events\Events::removeAllListeners('kpapy.token.used');
+        }
+    }
 }
 
 final class CustomLoginController extends \Kpapy\Auth\LoginController

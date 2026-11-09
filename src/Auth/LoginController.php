@@ -148,7 +148,7 @@ class LoginController extends Controller
         return $this->handle(function (): ResponseInterface {
             $user  = Context::user() ?? throw ApiException::unauthorized();
             $token = Context::token() ?? throw ApiException::unauthorized();
-            $new   = (new TokenService($this->kpapy))->create($user, (string) $token->name, array_values((array) $token->scopes));
+            $new   = (new TokenService($this->kpapy))->create($user, (string) $token->name, array_values((array) $token->scopes), null, ['kind' => TokenService::kindOf($token)]);
 
             $user->revokeAccessTokenBySecret($token->secret);
 

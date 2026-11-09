@@ -132,6 +132,12 @@ class Kpapy extends BaseConfig
     public int $tokenLifetime = 2592000;
 
     /**
+     * Desa la darrera adreça IP de cada token a la taula kpapy_token_usage (php spark migrate -n Kpapy)
+     * i la mostra a GET me/tokens ('last_ip'). L'esdeveniment kpapy.token.used es dispara sempre.
+     */
+    public bool $trackTokenIps = false;
+
+    /**
      * Abasts per defecte dels tokens nous si el client no en demana.
      *
      * @var list<string>
